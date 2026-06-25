@@ -156,6 +156,20 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "tnum" 1, "cv01" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  /* Tipografía con jerarquía clara */
+  h1 {
+    @apply text-2xl font-bold tracking-tight;
+    letter-spacing: -0.025em;
+  }
+  h2 {
+    @apply text-xl font-bold tracking-tight;
+    letter-spacing: -0.02em;
+  }
+  h3 {
+    @apply text-base font-semibold;
   }
   /* Scrollbar suave para listas largas */
   .scroll-fine::-webkit-scrollbar {
@@ -163,12 +177,22 @@
     height: 8px;
   }
   .scroll-fine::-webkit-scrollbar-thumb {
-    background: var(--muted-foreground);
+    background: oklch(0.7 0.01 160);
     border-radius: 8px;
-    opacity: 0.4;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  .scroll-fine::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.55 0.02 160);
+    background-clip: padding-box;
+    border: 2px solid transparent;
   }
   .scroll-fine::-webkit-scrollbar-track {
     background: transparent;
+  }
+  /* Transición suave global en elementos interactivos */
+  button, a, [role="button"] {
+    transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, opacity 150ms ease, transform 150ms ease;
   }
 }
 
@@ -177,11 +201,15 @@
   .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
+  /* Valores bimonetarios con mejor contraste (no gris claro) */
   .text-usd {
     color: var(--usd);
   }
   .text-ves {
-    color: var(--ves);
+    color: oklch(0.42 0.05 250);
+  }
+  .dark .text-ves {
+    color: oklch(0.75 0.04 250);
   }
   .bg-usd {
     background-color: var(--usd);
@@ -197,5 +225,19 @@
       linear-gradient(to right, oklch(0.51 0.12 162 / 0.06) 1px, transparent 1px),
       linear-gradient(to bottom, oklch(0.51 0.12 162 / 0.06) 1px, transparent 1px);
     background-size: 32px 32px;
+  }
+  /* Tokens de padding consistentes para cards */
+  .card-pad {
+    @apply p-5 md:p-6;
+  }
+  .card-pad-sm {
+    @apply p-4 md:p-5;
+  }
+  /* Sombra suave para cards elevadas */
+  .shadow-soft {
+    box-shadow: 0 1px 2px 0 oklch(0.21 0.02 160 / 0.04), 0 1px 3px 0 oklch(0.21 0.02 160 / 0.06);
+  }
+  .shadow-soft-lg {
+    box-shadow: 0 4px 6px -1px oklch(0.21 0.02 160 / 0.06), 0 2px 4px -1px oklch(0.21 0.02 160 / 0.04);
   }
 }

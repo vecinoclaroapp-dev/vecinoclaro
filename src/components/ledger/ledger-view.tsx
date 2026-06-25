@@ -148,7 +148,17 @@ export function LedgerView() {
                 </thead>
                 <tbody>
                   {filtered.length === 0 ? (
-                    <tr><td colSpan={6} className="py-12 text-center text-muted-foreground">No hay asientos que coincidan</td></tr>
+                    <tr>
+                      <td colSpan={6} className="py-2">
+                        <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                          <div className="h-14 w-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center mb-3 ring-1 ring-emerald-100 dark:ring-emerald-900/40">
+                            <BookOpen className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                          </div>
+                          <p className="text-sm font-medium">No hay asientos que coincidan</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">Los asientos contables se generan automáticamente al registrar pagos y cargos</p>
+                        </div>
+                      </td>
+                    </tr>
                   ) : (
                     filtered.map((e) => {
                       const isCredit = e.type === "CREDIT";

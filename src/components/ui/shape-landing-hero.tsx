@@ -99,7 +99,7 @@ function HeroGeometric({
     };
 
     return (
-        <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-emerald-950">
+        <div className="relative min-h-[88vh] w-full flex items-center justify-center overflow-hidden bg-emerald-950 py-20">
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.08] via-transparent to-amber-500/[0.08] blur-3xl" />
 
             <div className="absolute inset-0 overflow-hidden">
@@ -156,7 +156,7 @@ function HeroGeometric({
                         variants={fadeUpVariants}
                         initial="hidden"
                         animate="visible"
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] mb-8 md:mb-12"
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] mb-8 md:mb-10"
                     >
                         <Circle className="h-2 w-2 fill-amber-400/80" />
                         <span className="text-sm text-white/60 tracking-wide">
@@ -170,7 +170,7 @@ function HeroGeometric({
                         initial="hidden"
                         animate="visible"
                     >
-                        <h1 className="text-4xl sm:text-6xl md:text-8xl font-bold mb-6 md:mb-8 tracking-tight">
+                        <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold mb-6 md:mb-8 tracking-tight leading-[1.05]">
                             <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80">
                                 {title1}
                             </span>
@@ -191,7 +191,7 @@ function HeroGeometric({
                         initial="hidden"
                         animate="visible"
                     >
-                        <p className="text-base sm:text-lg md:text-xl text-white/40 mb-8 leading-relaxed font-light tracking-wide max-w-xl mx-auto px-4">
+                        <p className="text-base sm:text-lg md:text-xl text-white/60 mb-8 leading-relaxed font-light tracking-wide max-w-xl mx-auto px-4">
                             {subtitle}
                         </p>
                         {cta && <div className="flex justify-center">{cta}</div>}

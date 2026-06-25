@@ -84,7 +84,7 @@ export function AuthScreen({ onAuthed, onBack }: Props) {
             </div>
             <div>
               <p className="font-bold text-lg leading-tight">CondominioDigital</p>
-              <p className="text-xs text-emerald-200 leading-tight tracking-wider">VENEZUELA</p>
+              <p className="text-xs text-amber-300 leading-tight tracking-wider font-semibold">VENEZUELA</p>
             </div>
           </div>
         </div>
@@ -180,7 +180,7 @@ export function AuthScreen({ onAuthed, onBack }: Props) {
             </>
           )}
 
-          <form onSubmit={submit} className="space-y-4">
+          <form onSubmit={submit} className="space-y-5">
             {mode === "register" && (
               <div className="space-y-1.5">
                 <Label htmlFor="name">Nombre completo</Label>

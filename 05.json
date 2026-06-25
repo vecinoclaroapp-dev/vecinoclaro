@@ -1,0 +1,15 @@
+🚀 Initializing Z-AI SDK...
+🚀 Sending vision chat request...
+Failed to make vision API request: 143 |                 headers: headers,
+144 |                 body: JSON.stringify(requestBody),
+145 |             });
+146 |             if (!response.ok) {
+147 |                 const errorBody = await response.text();
+148 |                 throw new Error(`API request failed with status ${response.status}: ${errorBody}`);
+                                ^
+error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+      at createChatCompletionVision (/home/z/.bun/install/global/node_modules/z-ai-web-dev-sdk/dist/index.js:148:27)
+      at async handleVision (/home/z/.bun/install/global/node_modules/z-ai-web-dev-sdk/dist/cli.js:579:52)
+      at async main (/home/z/.bun/install/global/node_modules/z-ai-web-dev-sdk/dist/cli.js:1068:23)
+
+❌ Error: API request failed with status 429: {"error":"Too many requests, please try again later"}

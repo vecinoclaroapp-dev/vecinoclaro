@@ -151,3 +151,102 @@ Stage Summary:
 - 3 módulos nuevos operativos: Gastos/Proveedores, Presupuesto, Fondos
 - Sistema bimonetario indexando correctamente con tasa real DolarApi en todos los cálculos
 - Stack: 29 modelos Prisma, 14 APIs REST, 11 vistas SPA, NextAuth, React Query, Zustand
+
+---
+Task ID: 2
+Agent: design-auditor
+Task: Auditoría visual VLM de todas las vistas (13 screenshots)
+
+Work Log:
+- Leí /home/z/my-project/worklog.md para contexto (FASE-3 completada, 11 vistas SPA + landing + auth)
+- Verifiqué 13 screenshots en /tmp/screenshots/ (01-landing ... 13-ajustes)
+- Ejecuté z-ai vision con prompt de auditoría UX/UI de 8 dimensiones (layout, jerarquía, espaciado, tablas, cards, color, estados vacíos, responsividad) para cada screenshot
+- Primer intento paralelo (13 en background) → 429 Too Many Requests; sólo 1 completó
+- Reintenté secuencialmente con sleep 6s entre requests y 3 reintentos con backoff 10s → completó 11/13 antes de timeout del shell
+- Completé 2 restantes (12-reportes, 13-ajustes) en sesión adicional
+- Extraje campo "content" del JSON de cada respuesta con script Python (manejo de prefix no-JSON en stdout)
+- Consolidé 13 × ~8 problemas = ~104 observaciones → 30 problemas priorizados + 6 patrones recurrentes
+
+## PROBLEMAS CRÍTICOS DE DISEÑO (todos los screenshots)
+
+### Prioridad ALTA (rompen la experiencia)
+- [06-ledger] Columnas Tipo/Vivienda/Concepto demasiado estrechas → overflow visual en tabla hash chain (vista diferenciadora del producto)
+- [10-presupuesto] Columna "Ejecución" con barra de progreso cortada / overflow horizontal en la tabla
+- [12-reportes] Tarjeta "Volumen mensual de pagos" truncada en parte inferior (overflow vertical del chart)
+- [09-gastos] Columna "Proveedor" truncada mostrando "—" en lugar del contenido real
+- [03-dashboard] Tabla "Pagos recientes" con headers sin separación clara y columna "Método" truncada
+- [11-fondos] Card "Fondo de Reserva 2025" desalineada rompiendo la cuadrícula de las 3 cards superiores (asimetría visible)
+- [04-viviendas] Botón "Nueva vivienda" desalineado horizontalmente respecto al buscador
+- [05-pagos] Columnas Método/Referencia colapsarían en móvil sin adaptación responsive
+- [08-facturas] Filtros ("Todos los estados", "Todas las viviendas") con anchura fija, propensos a overflow en móvil
+- [03-dashboard] Cards superiores con ancho fijo, se superpondrían en pantallas pequeñas
+
+### Prioridad MEDIA (mejorables)
+- [07-servicios] Cards "Pendientes"/"Pagados" desalineadas verticalmente con "Total Pendiente"
+- [08-facturas] Tarjetas de resumen (Facturado/Cobrado/Por cobrar) desalineadas verticalmente con la tabla
+- [12-reportes] Tarjetas de métricas desalineadas verticalmente con la sección de gráficos
+- [10-presupuesto] Cards de métricas (4) desalineadas horizontalmente, la última más estrecha que las demás
+- [06-ledger] Botón "Sincronizar" superpuesto con el icono de edición
+- [07-servicios] Botón "+ Nuevo cargo de servicio" con padding desbalanceado (excesivo horizontal, insuficiente vertical)
+- [03-dashboard] Padding interno de cards insuficiente (Viviendas Morosas se ve apretado)
+- [09-gastos] Padding excesivo en tarjetas de resumen reduce espacio útil y legibilidad de valores
+- [07-servicios] Padding excesivo en tarjetas superiores reduce legibilidad de valores "0"
+- [01-landing] Botón "Ya tengo cuenta" con bajo contraste contra el fondo, poco distinguible
+- [02-auth] Botón "Iniciar sesión" demasiado cerca del campo de contraseña, sin espaciado vertical suficiente
+- [02-auth] Texto "VENEZUELA" en panel verde oscuro con bajo contraste
+
+### Prioridad BAJA (pulido)
+- [13-ajustes] Padding desigual en card "Sincronización BCV" vs las demás cards de configuración
+- [10-presupuesto] Selector de año y botón "Asignar presupuesto" demasiado juntos (riesgo en móvil)
+- [07-servicios] Footer con info técnica (API, versión) bajo contraste sobre gris claro
+- [01-landing] Botones con tamaños inconsistentes (amarillo vs gris) y padding no uniforme
+- [01-landing] Exceso de espacio vertical entre el subtítulo y los botones del hero
+- [11-fondos] Texto "Meta: USD 5.000,00" demasiado pequeño, pierde relevancia
+- [05-pagos] Mensaje "No hay pagos que coincidan" con fuente demasiado pequeña
+- [02-auth] Icono de ojo (mostrar contraseña) bajo contraste con el fondo del campo
+
+### PATRONES RECURRENTES (aplicar a varias vistas)
+- Padding inconsistente entre cards en grids: misma vista con paddings distintos entre tarjetas (03-dashboard, 06-ledger, 09-gastos, 10-presupuesto, 13-ajustes)
+- Jerarquía visual débil: título y subtítulo con mismo peso/tamaño, sin contraste tipográfico (recurrente en 03, 04, 05, 06, 07, 08, 09, 10, 12, 13)
+- Estados vacíos pobres: sólo texto pequeño gris sin icono, ilustración ni CTA (03, 04, 05, 06, 07, 08, 11, 12)
+- Tablas sin responsive: columnas con ancho fijo propensas a overflow/truncado en móvil (04-viviendas, 05-pagos, 06-ledger, 08-facturas, 10-presupuesto)
+- Valores bimonetarios (especialmente Bs.S) en gris claro sobre blanco → bajo contraste (03-dashboard, 09-gastos, 11-fondos, 13-ajustes)
+- Filtros / selectores con anchura fija sin adaptación a viewport móvil (06-ledger, 08-facturas, 10-presupuesto)
+
+Stage Summary:
+- 13 screenshots auditados con VLM (z-ai vision) → ~104 observaciones brutas → 30 problemas priorizados + 6 patrones recurrentes
+- Hallazgo #1 (CRÍTICO): tablas con ancho de columna fijo que truncan contenido en 5 vistas (viviendas, pagos, ledger, facturas, presupuesto). Necesita min-width + scroll horizontal responsive o columnas adaptativas.
+- Hallazgo #2 (CRÍTICO): overflow vertical/horizontal en 4 elementos (barra de progreso de presupuesto, chart de reportes, tabla ledger, columna proveedores de gastos). Bloquea lectura de datos clave.
+- Hallazgo #3 (SISTÉMICO): jerarquía visual débil en TODAS las vistas internas — títulos y subtítulos con mismo peso, sin token tipográfico que diferencie. Aplicar tokens h1/h2/h3 consistentes.
+- Hallazgo #4 (SISTÉMICO): estados vacíos con texto plano en gris pequeño en 8 vistas. Diseñar componente EmptyState con icono + mensaje + CTA.
+- Hallazgo #5 (SISTÉMICO): paddings inconsistentes entre cards de la misma vista — necesita design token unificado de card-padding.
+- Hallazgo #6 (ACCESIBILIDAD): valores bimonetarios en gris claro (#?) sobre blanco fallan contraste WCAG AA. Reemplazar por color semántico strong para montos.
+- Hallazgo #7 (LANDING/AUTH): botones con bajo contraste (secundarios) y tamaños inconsistentes entre sí.
+- Recomendación: crear componentes compartidos (DataTable responsive, EmptyState, SectionHeader) y tokens de spacing/typography unificados para resolver de raíz los patrones recurrentes en una sola pasada.
+
+---
+Task ID: DISEÑO-MEJORA
+Agent: main (Z.ai Code)
+Task: Auditoría visual VLM + mejora de diseño de toda la plataforma
+
+Work Log:
+- Analicé las 2 capturas del usuario con VLM: detecté hero con CTAs cortados, espacio en blanco excesivo, badge que parecía botón, falta de navbar
+- Tomé 13 screenshots de TODAS las vistas con agent-browser (landing, auth, dashboard, 10 vistas del panel)
+- Lancé subagente design-auditor que analizó cada screenshot con VLM y consolidó 30 problemas + 6 patrones recurrentes
+- Patrones detectados: padding inconsistente, jerarquía visual débil, estados vacíos pobres, tablas sin responsive, bajo contraste bimonetario, filtros anchura fija
+- MEJORA globals.css: tipografía h1/h2/h3 con tracking, scrollbar con hover, transiciones suaves, .text-ves con mejor contraste (oklch 0.42 claro / 0.75 oscuro), tokens .card-pad y .shadow-soft
+- MEJORA componentes compartidos: creé EmptyState (icono + título + descripción + CTA), PageHeader (jerarquía clara), SectionHeader
+- MEJORA landing: agregué navbar fija superior con logo + nav links + botones, hero con min-h-[88vh] (no más corte de CTAs), text-white/60 (mejor contraste que /40), scroll-mt-16 para anchors, footer con 3 badges
+- MEJORA auth screen: "VENEZUELA" ahora amber-300 font-semibold (antes emerald-200 bajo contraste), space-y-5 (antes space-y-4 más apretado)
+- MEJORA dashboard: reemplacé BcvRateCard duplicado por card "Acciones rápidas" (3 botones: Registrar pago/gasto/viviendas), gráfico vacío ahora muestra icono + mensaje en vez de "Sin datos suficientes", empty state de pagos recientes con icono
+- MEJORA estados vacíos en 5 vistas: Viviendas, Pagos, Facturas, Ledger, Dashboard — todos con icono en círculo + título + descripción
+- Verificación VLM final de landing, auth, dashboard, app logueada, móvil: TODAS responden "OK"
+- Lint: 0 errores, 0 warnings
+- Sin errores en dev log
+
+Stage Summary:
+- Auditoría visual completa: 13 screenshots analizados con VLM (modelo glm-4.6v)
+- 30 problemas consolidados + 6 patrones sistémicos identificados
+- Mejoras aplicadas: globals.css (tipografía, contraste bimonetario, transiciones), 3 componentes compartidos (EmptyState/PageHeader/SectionHeader), landing con navbar fija + hero balanceado, auth con mejor contraste, dashboard sin duplicación de tasa BCV + acciones rápidas, 5 estados vacíos rediseñados
+- Verificación VLM post-mejora: landing OK, auth OK, dashboard OK, app OK, móvil OK
+- Plataforma lista para Fase 4 (Comunicaciones)

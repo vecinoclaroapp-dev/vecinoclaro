@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BcvRateCard } from "@/components/dashboard/bcv-rate-card";
 import { StatCard } from "@/components/shared/stat-card";
 import { BimonetaryAmount, BimonetaryPill } from "@/components/shared/bimonetary";
 import { PaymentMethodBadge } from "@/components/shared/badges";
@@ -153,16 +152,67 @@ export function DashboardView() {
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
-                  Sin datos suficientes
+                <div className="h-full flex flex-col items-center justify-center text-center">
+                  <TrendingUp className="h-8 w-8 text-muted-foreground/40 mb-2" />
+                  <p className="text-sm font-medium text-muted-foreground">Sin pagos registrados aún</p>
+                  <p className="text-xs text-muted-foreground/70 mt-0.5">El gráfico se completará al recibir pagos</p>
                 </div>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Widget BCV */}
-        <BcvRateCard />
+        {/* Acciones rápidas (no duplica la tasa BCV que ya está en el topbar) */}
+        <Card className="bg-gradient-to-br from-emerald-50 to-amber-50/50 dark:from-emerald-950/20 dark:to-amber-950/10 border-emerald-100 dark:border-emerald-900/40">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Zap className="h-4 w-4 text-emerald-600" />
+              Acciones rápidas
+            </CardTitle>
+            <CardDescription>Operaciones frecuentes del condominio</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <button
+              onClick={() => setView("payments")}
+              className="w-full flex items-center gap-3 rounded-lg bg-background/80 hover:bg-background border border-emerald-100 dark:border-emerald-900/40 p-3 text-left transition-colors group"
+            >
+              <div className="h-9 w-9 rounded-lg bg-emerald-100 dark:bg-emerald-950/50 flex items-center justify-center shrink-0">
+                <CreditCard className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold leading-tight">Registrar pago</p>
+                <p className="text-xs text-muted-foreground leading-tight">Pago Móvil, Zelle, Transferencia</p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all" />
+            </button>
+            <button
+              onClick={() => setView("expenses")}
+              className="w-full flex items-center gap-3 rounded-lg bg-background/80 hover:bg-background border border-amber-100 dark:border-amber-900/40 p-3 text-left transition-colors group"
+            >
+              <div className="h-9 w-9 rounded-lg bg-amber-100 dark:bg-amber-950/50 flex items-center justify-center shrink-0">
+                <Banknote className="h-4 w-4 text-amber-700 dark:text-amber-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold leading-tight">Registrar gasto</p>
+                <p className="text-xs text-muted-foreground leading-tight">Egresos y proveedores</p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-amber-600 group-hover:translate-x-0.5 transition-all" />
+            </button>
+            <button
+              onClick={() => setView("residences")}
+              className="w-full flex items-center gap-3 rounded-lg bg-background/80 hover:bg-background border border-border p-3 text-left transition-colors group"
+            >
+              <div className="h-9 w-9 rounded-lg bg-sky-100 dark:bg-sky-950/50 flex items-center justify-center shrink-0">
+                <Home className="h-4 w-4 text-sky-700 dark:text-sky-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold leading-tight">Gestionar viviendas</p>
+                <p className="text-xs text-muted-foreground leading-tight">Propiedades y saldos</p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-sky-600 group-hover:translate-x-0.5 transition-all" />
+            </button>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Tercera fila: pagos recientes + top morosos + por método */}
@@ -195,8 +245,14 @@ export function DashboardView() {
                 <tbody>
                   {data.recentPayments.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="py-10 text-center text-muted-foreground text-sm">
-                        Aún no hay pagos registrados
+                      <td colSpan={4} className="py-2">
+                        <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+                          <div className="h-12 w-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center mb-3 ring-1 ring-emerald-100 dark:ring-emerald-900/40">
+                            <CreditCard className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                          </div>
+                          <p className="text-sm font-medium">Aún no hay pagos registrados</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">Los pagos que registres aparecerán aquí</p>
+                        </div>
                       </td>
                     </tr>
                   ) : (

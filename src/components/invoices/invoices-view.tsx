@@ -121,7 +121,17 @@ export function InvoicesView() {
                 </thead>
                 <tbody>
                   {filtered.length === 0 ? (
-                    <tr><td colSpan={6} className="py-12 text-center text-muted-foreground">No hay facturas</td></tr>
+                    <tr>
+                      <td colSpan={6} className="py-2">
+                        <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                          <div className="h-14 w-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center mb-3 ring-1 ring-emerald-100 dark:ring-emerald-900/40">
+                            <FileText className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                          </div>
+                          <p className="text-sm font-medium">No hay facturas</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">Las facturas mensuales aparecerán aquí</p>
+                        </div>
+                      </td>
+                    </tr>
                   ) : (
                     filtered.map((i) => {
                       const cfg = statusConfig[i.status as keyof typeof statusConfig] ?? statusConfig.PENDING;
