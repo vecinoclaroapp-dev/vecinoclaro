@@ -1,27 +1,31 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getUserContext, unauthorized, noCondominium } from "@/lib/api-context";
 
-// GET /api/condominium — info del condominio
+// GET /api/condominium — info del condominio del usuario actual
 export async function GET() {
-  const condo = await db.condominium.findFirst({
-    include: {
-      residences: { where: { active: true }, select: { id: true } },
-    },
+  const { user, condominium } = await getUserContext();
+  if (!user) return unauthorized();
+  if (!condominium) return noCondominium();
+
+  const residencesCount = await db.residence.count({
+    where: { condominiumId: condominium.id, active: true },
   });
 
-  if (!condo) {
-    return NextResponse.json({ error: "No hay condominio configurado" }, { status: 404 });
-  }
-
   return NextResponse.json({
-    id: condo.id,
-    name: condo.name,
-    rif: condo.rif,
-    address: condo.address,
-    adminName: condo.adminName,
-    adminPhone: condo.adminPhone,
-    baseFeeUSD: condo.baseFeeUSD,
-    reserveFund: condo.reserveFund,
-    residencesCount: condo.residences.length,
+    id: condominium.id,
+    name: condominium.name,
+    rif: condominium.rif,
+    address: condominium.address,
+    city: condominium.city,
+    adminName: condominium.adminName,
+    adminPhone: condominium.adminPhone,
+    adminEmail: condominium.adminEmail,
+    baseFeeUSD: condominium.baseFeeUSD,
+    reserveFund: condominium.reserveFund,
+    logoUrl: condominium.logoUrl,
+    primaryColor: condominium.primaryColor,
+    setupComplete: condominium.setupComplete,
+    residencesCount,
   });
 }

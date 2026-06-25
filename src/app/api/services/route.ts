@@ -1,17 +1,22 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getUserContext, unauthorized, noCondominium } from "@/lib/api-context";
 import { getLatestRate } from "@/lib/bcv";
 import { appendLedgerEntry } from "@/lib/ledger";
 import { usdToVes, round2 } from "@/lib/money";
 import { SERVICE_TYPES, type ServiceChargeType } from "@/lib/constants";
 
-// GET /api/services — cargos de servicios críticos
+// GET /api/services
 export async function GET(request: Request) {
+  const { user, condominium } = await getUserContext();
+  if (!user) return unauthorized();
+  if (!condominium) return noCondominium();
+
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status");
   const type = searchParams.get("type");
 
-  const where: Record<string, unknown> = {};
+  const where: Record<string, unknown> = { condominiumId: condominium.id };
   if (status) where.status = status;
   if (type) where.type = type;
 
@@ -45,8 +50,12 @@ export async function GET(request: Request) {
   });
 }
 
-// POST /api/services — crear cargo de servicio crítico
+// POST /api/services
 export async function POST(request: Request) {
+  const { user, condominium } = await getUserContext();
+  if (!user) return unauthorized();
+  if (!condominium) return noCondominium();
+
   try {
     const body = await request.json();
 
@@ -58,15 +67,9 @@ export async function POST(request: Request) {
     }
     const type = body.type as ServiceChargeType;
 
-    const condo = await db.condominium.findFirst();
-    if (!condo) {
-      return NextResponse.json({ error: "No hay condominio" }, { status: 400 });
-    }
-
-    const rate =
-      body.bcvRateId
-        ? await db.bcvRate.findUnique({ where: { id: body.bcvRateId } })
-        : await getLatestRate();
+    const rate = body.bcvRateId
+      ? await db.bcvRate.findUnique({ where: { id: body.bcvRateId } })
+      : await getLatestRate();
     if (!rate) {
       return NextResponse.json(
         { error: "No hay tasa BCV. Sincronice primero." },
@@ -82,8 +85,8 @@ export async function POST(request: Request) {
 
     const charge = await db.serviceCharge.create({
       data: {
-        condominiumId: condo.id,
-        residenceId: body.residenceId || null, // null = prorrateado
+        condominiumId: condominium.id,
+        residenceId: body.residenceId || null,
         type,
         title: body.title.trim(),
         description: body.description?.trim() || null,
@@ -92,12 +95,11 @@ export async function POST(request: Request) {
         bcvRateId: rate.id,
         dueDate: body.dueDate ? new Date(body.dueDate) : new Date(Date.now() + 15 * 86400000),
         status: body.status || "PENDING",
+        createdById: user.id,
       },
     });
 
-    // Generar asientos DEBIT en el ledger
     if (body.residenceId) {
-      // Cargo directo a una vivienda
       await appendLedgerEntry({
         residenceId: body.residenceId,
         type: "DEBIT",
@@ -111,11 +113,11 @@ export async function POST(request: Request) {
         serviceChargeId: charge.id,
       });
     } else {
-      // Prorrateado: cargar a todas las viviendas activas
-      // Locales comerciales pagan 2.5x (alícuota mayor)
-      const residences = await db.residence.findMany({ where: { active: true } });
+      const residences = await db.residence.findMany({
+        where: { condominiumId: condominium.id, active: true },
+      });
       for (const r of residences) {
-        const factor = r.type === "LOCAL" ? 2.5 : 1;
+        const factor = r.aliquot || 1;
         const aUSD = round2(amountUSD * factor);
         const aVES = usdToVes(aUSD, rate.rate);
         await appendLedgerEntry({

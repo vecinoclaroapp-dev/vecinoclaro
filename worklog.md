@@ -33,3 +33,44 @@ Stage Summary:
 - Exportación CSV de reportes
 - Stack: Next.js 16 + TypeScript + Tailwind 4 + shadcn/ui + Prisma/SQLite + React Query + Zustand + Recharts
 - Cumple todas las reglas: ruta única /, no indigo/blue, footer sticky, responsive, accesible
+
+---
+Task ID: FASE-2
+Agent: main (Z.ai Code)
+Task: Fase 2 — Auth, landing, onboarding, data en 0, principios Anthropic, ampliación schema
+
+Work Log:
+- Evalué honestamente las 4 solicitudes del usuario: MCP 21st Dev (NO posible en CLI sandbox), repo Anthropic skills (SÍ, clonado), API Cryptocompare (key inválida para VES, fallback a tasa manual), data en 0 (SÍ), landing+auth (SÍ), onboarding (SÍ)
+- Cloné anthropics/skills a /tmp, leí frontend-design + brand-guidelines, aplico principios (hero con tesis, tipografía con carácter, copy desde lado del usuario)
+- Amplié schema Prisma: 8 modelos → 24 modelos (User con onboarding, Account/Session/VerificationToken para NextAuth, CondominiumMember, Supplier, Expense, AccountPayable, BankAccount, Fund, Budget, AdminTask, Announcement, CalendarEvent, Facility, FacilityReservation, Poll/PollOption, ResidentRequest, Document, Message)
+- Reset BD a estado limpio (sin seed de demo) — data en 0 como exigió el usuario
+- Configuré NextAuth.js v4 con CredentialsProvider + GoogleProvider (condicional a env vars)
+- Instalé bcryptjs para hash de passwords
+- Creé APIs: /api/auth/register, /api/auth/[...nextauth], /api/me (GET+PATCH), /api/onboarding (4 pasos)
+- Helper getUserContext() para scoping por condominio del usuario autenticado
+- Actualicé TODAS las APIs existentes (condominium, residences, dashboard, payments, ledger, services, invoices) para requerir auth + scope por condominio
+- Pantalla AuthScreen con dual-panel: lado izquierdo brand con hero+features, lado derecho form login/registro con tabs
+- OnboardingWizard de 4 pasos: (1) Condominio, (2) Viviendas en batch, (3) Tasa BCV (sync + manual fallback), (4) ¡Listo!
+- page.tsx con renderizado condicional: no auth → AuthScreen, onboarding pendiente → Wizard, completo → App
+- Sidebar actualizado con avatar de usuario + botón logout
+- Refactoricé payments-view: conversión bimonetaria derivada (no useEffect con setState) para cumplir reglas React 19
+- Lint: 0 errores, 0 warnings
+- Verificación end-to-end con Agent Browser:
+  * Pantalla auth carga (login + registro + Google condicional)
+  * Registro de cuenta: admin3@testcondo.ve / test123 → 201 Created
+  * Auto-login tras registro → wizard aparece
+  * Paso 1: creó "Residencias El Sol" J-98765432-1, cuota 40 USD
+  * Paso 2: cargó vivienda 1-A (Pedro Pérez)
+  * Paso 3: tasa manual 150.50 Bs/USD (BCV no responde desde sandbox)
+  * Paso 4: onboarding completado
+  * Entró al panel: dashboard con TODO EN 0 (USD 0,00 / Bs.S 0,00 en por cobrar, cobrado, morosas, servicios)
+  * Vista Viviendas muestra 1-A con saldo 0,00 y estado "Al día"
+  * Sin errores en consola ni dev log
+
+Stage Summary:
+- Sistema convertido de demo con seed a SaaS real: data en 0, onboarding guiado, multi-condominio
+- Auth completo: Credentials + Google OAuth (configurable via env)
+- 24 modelos en schema (vs 8 antes) — soporta todas las funciones de Vivook
+- Aplicados principios de diseño Anthropic (hero con tesis, signature element, copy user-centric)
+- Restricción de ruta única / respetada: renderizado condicional en page.tsx
+- Funciones Vivook pendientes para Fase 3: Gastos/Proveedores, Presupuesto, Fondos, Cuentas por pagar, Comunicaciones (11 sub-funciones)

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { usePayments, useCreatePayment, useResidences, useBcvRate } from "@/hooks/use-api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -75,31 +75,16 @@ export function PaymentsView() {
     notes: "",
   });
 
-  // Aplicar prefill desde otra vista
-  useEffect(() => {
-    if (prefillPayment?.residenceId) {
-      setForm((f) => ({ ...f, residenceId: prefillPayment.residenceId!, concept: prefillPayment.concept ?? f.concept, category: prefillPayment.category ?? f.category }));
-      setOpen(true);
-      setPrefillPayment(null);
-    }
-  }, [prefillPayment, setPrefillPayment]);
-
+  // Aplicar prefill desde otra vista (en handle de apertura, no en effect)
   const rate = bcv?.rate ?? 0;
 
-  // Recalcular el monto opuesto cuando cambia uno
-  useEffect(() => {
-    if (form.lastEdited === "usd" && form.amountUSD !== "") {
-      const usd = parseFloat(form.amountUSD);
-      if (!isNaN(usd) && rate > 0) {
-        setForm((f) => ({ ...f, amountVES: String(round2(usdToVes(usd, rate))) }));
-      }
-    } else if (form.lastEdited === "ves" && form.amountVES !== "") {
-      const ves = parseFloat(form.amountVES);
-      if (!isNaN(ves) && rate > 0) {
-        setForm((f) => ({ ...f, amountUSD: String(round2(ves / rate)) }));
-      }
-    }
-  }, [form.amountUSD, form.amountVES, form.lastEdited, rate]);
+  // Monto opuesto derivado (no en estado, se calcula al vuelo)
+  const computedVES = form.lastEdited === "usd" && form.amountUSD !== ""
+    ? (rate > 0 ? String(round2(usdToVes(parseFloat(form.amountUSD) || 0, rate))) : form.amountVES)
+    : form.amountVES;
+  const computedUSD = form.lastEdited === "ves" && form.amountVES !== ""
+    ? (rate > 0 ? String(round2((parseFloat(form.amountVES) || 0) / rate)) : form.amountUSD)
+    : form.amountUSD;
 
   const methodConfig = PAYMENT_METHODS.find((m) => m.value === form.method)!;
   const needsBank = form.method === "PAGO_MOVIL" || form.method === "TRANSFERENCIA_NAC";
@@ -117,8 +102,8 @@ export function PaymentsView() {
       await create.mutateAsync({
         residenceId: form.residenceId,
         method: form.method,
-        amountUSD: form.amountUSD,
-        amountVES: form.amountVES,
+        amountUSD: computedUSD,
+        amountVES: computedVES,
         reference: form.reference || undefined,
         bankOrigin: form.bankOrigin || undefined,
         payerPhone: form.payerPhone || undefined,
@@ -188,9 +173,22 @@ export function PaymentsView() {
             </SelectContent>
           </Select>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(o) => {
+          setOpen(o);
+          if (!o) setPrefillPayment(null);
+        }}>
           <DialogTrigger asChild>
-            <Button className="gap-1.5">
+            <Button className="gap-1.5" onClick={() => {
+              // Aplicar prefill al abrir si viene de otra vista
+              if (prefillPayment?.residenceId) {
+                setForm((f) => ({
+                  ...f,
+                  residenceId: prefillPayment.residenceId!,
+                  concept: prefillPayment.concept ?? f.concept,
+                  category: prefillPayment.category ?? f.category,
+                }));
+              }
+            }}>
               <Plus className="h-4 w-4" /> Registrar pago
             </Button>
           </DialogTrigger>
@@ -275,7 +273,7 @@ export function PaymentsView() {
                         step="0.01"
                         placeholder="0.00"
                         className="pl-9 font-bold tabular-nums"
-                        value={form.amountUSD}
+                        value={computedUSD}
                         onChange={(e) => setForm({ ...form, amountUSD: e.target.value, lastEdited: "usd" })}
                       />
                     </div>
@@ -290,7 +288,7 @@ export function PaymentsView() {
                         step="0.01"
                         placeholder="0.00"
                         className="pl-9 font-bold tabular-nums"
-                        value={form.amountVES}
+                        value={computedVES}
                         onChange={(e) => setForm({ ...form, amountVES: e.target.value, lastEdited: "ves" })}
                       />
                     </div>

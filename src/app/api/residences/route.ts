@@ -1,17 +1,24 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getUserContext, unauthorized, noCondominium } from "@/lib/api-context";
 import { outstandingFromEntries } from "@/lib/money";
 
-// GET /api/residences — listado con saldos calculados desde ledger inmutable
+// GET /api/residences
 export async function GET(request: Request) {
+  const { user, condominium } = await getUserContext();
+  if (!user) return unauthorized();
+  if (!condominium) return noCondominium();
+
   const { searchParams } = new URL(request.url);
   const activeOnly = searchParams.get("active") !== "false";
   const withBalances = searchParams.get("balances") !== "false";
 
   const residences = await db.residence.findMany({
-    where: activeOnly ? { active: true } : undefined,
+    where: {
+      condominiumId: condominium.id,
+      ...(activeOnly ? { active: true } : {}),
+    },
     include: {
-      condominium: { select: { name: true, baseFeeUSD: true } },
       ledgerEntries: withBalances
         ? { select: { type: true, amountUSD: true, amountVES: true } }
         : false,
@@ -27,19 +34,20 @@ export async function GET(request: Request) {
       number: r.number,
       floor: r.floor,
       type: r.type,
+      aliquot: r.aliquot,
       ownerName: r.ownerName,
       ownerPhone: r.ownerPhone,
       ownerEmail: r.ownerEmail,
       residentName: r.residentName,
+      residentPhone: r.residentPhone,
       active: r.active,
       createdAt: r.createdAt,
-      condominiumName: r.condominium.name,
-      baseFeeUSD: r.condominium.baseFeeUSD,
+      condominiumName: condominium.name,
+      baseFeeUSD: condominium.baseFeeUSD,
       paymentsCount: r._count.payments,
       invoicesCount: r._count.invoices,
       outstandingUSD: balances.usd,
       outstandingVES: balances.ves,
-      // positivo = debe; negativo = crédito a favor
       status: balances.usd > 0.01 ? "DEBT" : balances.usd < -0.01 ? "CREDIT" : "SETTLED",
     };
   });
@@ -47,12 +55,14 @@ export async function GET(request: Request) {
   return NextResponse.json({ residences: data });
 }
 
-// POST /api/residences — crear vivienda
+// POST /api/residences
 export async function POST(request: Request) {
+  const { user, condominium } = await getUserContext();
+  if (!user) return unauthorized();
+  if (!condominium) return noCondominium();
+
   try {
     const body = await request.json();
-
-    // validar
     if (!body.number || !body.ownerName) {
       return NextResponse.json(
         { error: "Número y propietario son obligatorios" },
@@ -60,21 +70,18 @@ export async function POST(request: Request) {
       );
     }
 
-    const condo = await db.condominium.findFirst();
-    if (!condo) {
-      return NextResponse.json({ error: "No hay condominio configurado" }, { status: 400 });
-    }
-
     const residence = await db.residence.create({
       data: {
-        condominiumId: condo.id,
+        condominiumId: condominium.id,
         number: String(body.number).trim().toUpperCase(),
         floor: body.floor?.trim() || null,
         type: body.type || "APARTMENT",
+        aliquot: Number(body.aliquot) || 1,
         ownerName: body.ownerName.trim(),
         ownerPhone: body.ownerPhone?.trim() || null,
         ownerEmail: body.ownerEmail?.trim() || null,
         residentName: body.residentName?.trim() || null,
+        residentPhone: body.residentPhone?.trim() || null,
         active: body.active !== false,
       },
     });

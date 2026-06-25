@@ -1,15 +1,25 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getUserContext, unauthorized, noCondominium } from "@/lib/api-context";
 
-// GET /api/ledger — libro contable inmutable
+// GET /api/ledger
 export async function GET(request: Request) {
+  const { user, condominium } = await getUserContext();
+  if (!user) return unauthorized();
+  if (!condominium) return noCondominium();
+
   const { searchParams } = new URL(request.url);
   const residenceId = searchParams.get("residenceId");
   const type = searchParams.get("type");
   const category = searchParams.get("category");
   const limit = Math.min(parseInt(searchParams.get("limit") || "100", 10), 500);
 
-  const where: Record<string, unknown> = {};
+  const where: Record<string, unknown> = {
+    OR: [
+      { residence: { condominiumId: condominium.id } },
+      { condominiumId: condominium.id },
+    ],
+  };
   if (residenceId) where.residenceId = residenceId;
   if (type) where.type = type;
   if (category) where.category = category;
@@ -28,8 +38,8 @@ export async function GET(request: Request) {
     entries: entries.map((e) => ({
       id: e.id,
       residenceId: e.residenceId,
-      residenceNumber: e.residence.number,
-      ownerName: e.residence.ownerName,
+      residenceNumber: e.residence?.number ?? "—",
+      ownerName: e.residence?.ownerName ?? "Condominio",
       type: e.type,
       amountUSD: e.amountUSD,
       amountVES: e.amountVES,

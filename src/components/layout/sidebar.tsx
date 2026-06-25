@@ -2,6 +2,8 @@
 
 import { useAppStore, type View } from "@/store/app-store";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   LayoutDashboard,
   Home,
@@ -13,9 +15,11 @@ import {
   Settings,
   Building2,
   X,
+  LogOut,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useCondominium } from "@/hooks/use-api";
+import { useMe, useLogout } from "@/hooks/use-auth";
+import { toast } from "sonner";
 
 const NAV_ITEMS: { view: View; label: string; icon: React.ComponentType<{ className?: string }>; description: string }[] = [
   { view: "dashboard", label: "Panel", icon: LayoutDashboard, description: "Resumen general" },
@@ -31,10 +35,24 @@ const NAV_ITEMS: { view: View; label: string; icon: React.ComponentType<{ classN
 export function Sidebar() {
   const { view, setView, sidebarOpen, setSidebarOpen } = useAppStore();
   const { data: condo } = useCondominium();
+  const { data: me } = useMe();
+  const logout = useLogout();
+
+  const user = me?.user;
+  const initials = user?.name
+    ? user.name.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase()
+    : user?.email?.[0]?.toUpperCase() ?? "?";
+
+  const handleLogout = () => {
+    toast.promise(logout.mutateAsync(), {
+      loading: "Cerrando sesión...",
+      success: "Sesión cerrada",
+      error: "Error",
+    });
+  };
 
   return (
     <>
-      {/* Overlay móvil */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
@@ -113,13 +131,27 @@ export function Sidebar() {
           })}
         </nav>
 
-        {/* Footer */}
-        <div className="border-t border-sidebar-border p-4">
-          <div className="rounded-lg bg-gradient-to-br from-emerald-50 to-amber-50 dark:from-emerald-950/30 dark:to-amber-950/20 p-3 border border-emerald-100 dark:border-emerald-900/50">
-            <p className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">Sistema bimonetario</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">
-              USD + VES · Tasa BCV · Ledger inmutable
-            </p>
+        {/* User + logout */}
+        <div className="border-t border-sidebar-border p-3 space-y-2">
+          <div className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-sidebar-accent/50 transition-colors">
+            <Avatar className="h-9 w-9">
+              <AvatarFallback className="bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium truncate leading-tight">{user?.name ?? "Usuario"}</p>
+              <p className="text-[11px] text-muted-foreground truncate leading-tight">{user?.email}</p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-rose-600"
+              onClick={handleLogout}
+              aria-label="Cerrar sesión"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </aside>
