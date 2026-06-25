@@ -1,0 +1,260 @@
+// =====================================================================
+// CondominioDigital VE — Schema Bimonetario
+// ---------------------------------------------------------------------
+// Diseño independiente del motor: válido para SQLite (actual) y
+// migrable a PostgreSQL cambiando `provider` y usando Decimal en lugar
+// de Float para montos cuando se requiera precisión contable extrema.
+//
+// PRINCIPIOS:
+//  1. Bimonetario: toda transacción guarda amountUSD + amountVES + bcvRateId
+//  2. Inmutabilidad: AccountEntry es append-only con hash chain SHA-256
+//  3. Tasa BCV versionada por día (date @unique)
+// =====================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------
+// USUARIOS Y CONDOMINIO
+// ---------------------------------------------------------------------
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      String   @default("ADMIN") // ADMIN | TREASURER | RESIDENT
+  phone     String?
+  password  String   // bcrypt hash
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  payments      Payment[]
+  serviceCharges ServiceCharge[]
+  bcvSyncs      BcvSync[]
+}
+
+model Condominium {
+  id           String   @id @default(cuid())
+  name         String
+  rif          String
+  address      String
+  adminName    String?
+  adminPhone   String?
+  baseFeeUSD   Float    @default(40) // cuota mensual base en USD
+  reserveFund  Float    @default(0)  // fondo de reserva acumulado en USD
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  residences     Residence[]
+  serviceCharges ServiceCharge[]
+}
+
+model Residence {
+  id            String   @id @default(cuid())
+  condominiumId String
+  number        String   // "12-A", "Casa 5", "Local 1"
+  floor         String?
+  type          String   @default("APARTMENT") // APARTMENT | HOUSE | LOCAL | PARKING
+  ownerName     String
+  ownerPhone    String?
+  ownerEmail    String?
+  residentName  String?
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  condominium    Condominium     @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  payments       Payment[]
+  ledgerEntries  AccountEntry[]
+  serviceCharges ServiceCharge[]
+  invoices       Invoice[]
+
+  @@unique([condominiumId, number])
+  @@index([condominiumId])
+  @@index([active])
+}
+
+// ---------------------------------------------------------------------
+// TASA DE CAMBIO BCV (versión diaria, inmutable)
+// ---------------------------------------------------------------------
+
+model BcvRate {
+  id        String   @id @default(cuid())
+  rate      Float    // VES por 1 USD
+  date      DateTime @unique // fecha de vigencia (yyyy-mm-dd)
+  source    String   @default("BCV") // BCV | MANUAL | API
+  fetchedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  payments       Payment[]
+  ledgerEntries  AccountEntry[]
+  serviceCharges ServiceCharge[]
+  invoices       Invoice[]
+
+  @@index([date])
+}
+
+model BcvSync {
+  id           String   @id @default(cuid())
+  rate         Float
+  source       String
+  status       String   @default("SUCCESS") // SUCCESS | FAILED
+  message      String?
+  triggeredById String?
+  triggeredBy  User?    @relation(fields: [triggeredById], references: [id])
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------
+// PAGOS (pasarela localizada VE)
+// ---------------------------------------------------------------------
+
+model Payment {
+  id          String   @id @default(cuid())
+  residenceId String
+  residence   Residence @relation(fields: [residenceId], references: [id], onDelete: Cascade)
+
+  // Bimonetario
+  amountUSD   Float
+  amountVES   Float
+  bcvRateId   String
+  bcvRate     BcvRate  @relation(fields: [bcvRateId], references: [id])
+
+  // Pasarela localizada
+  method      String   // PAGO_MOVIL | TRANSFERENCIA_NAC | ZELLE | EFECTIVO
+  reference   String?  // número de referencia / operación
+  bankOrigin  String?  // banco emisor: BDV, BNC, Banesco, Mercantil...
+  payerPhone  String?
+  payerName   String
+  payerDoc    String?  // cédula / RIF del pagador
+
+  concept     String
+  category    String   @default("MAINTENANCE") // MAINTENANCE | SERVICE_CHARGE | RESERVE | OTHER
+
+  status      String   @default("CONFIRMED") // PENDING | CONFIRMED | REJECTED
+  date        DateTime
+  notes       String?
+
+  recordedById String?
+  recordedBy   User?   @relation(fields: [recordedById], references: [id])
+
+  // Relación 1:1 con el asiento contable (el FK lo posee AccountEntry)
+  ledgerEntry AccountEntry?
+
+  createdAt DateTime @default(now())
+
+  @@index([residenceId])
+  @@index([date])
+  @@index([status])
+  @@index([method])
+  @@index([category])
+}
+
+// ---------------------------------------------------------------------
+// LIBRO CONTABLE INMUTABLE (hash chain)
+// ---------------------------------------------------------------------
+
+model AccountEntry {
+  id            String   @id @default(cuid())
+  residenceId   String
+  residence     Residence @relation(fields: [residenceId], references: [id], onDelete: Cascade)
+
+  type          String   // CREDIT (abono/pago) | DEBIT (cargo/factura)
+
+  amountUSD     Float
+  amountVES     Float
+  bcvRateId     String
+  bcvRate       BcvRate  @relation(fields: [bcvRateId], references: [id])
+
+  concept       String
+  category      String   // MAINTENANCE | SERVICE_CHARGE | RESERVE | PENALTY | PAYMENT | ADJUSTMENT
+  reference     String?
+
+  date          DateTime
+
+  // Cadena de hashes para auditoría criptográfica
+  hash          String   @unique // sha256(prevHash + payload)
+  prevHash      String?
+
+  paymentId      String?  @unique
+  payment        Payment? @relation(fields: [paymentId], references: [id])
+  invoiceId      String?
+  serviceChargeId String?
+
+  createdAt DateTime @default(now())
+
+  @@index([residenceId, date])
+  @@index([type])
+  @@index([category])
+  @@index([date])
+}
+
+// ---------------------------------------------------------------------
+// SERVICIOS CRÍTICOS (planta eléctrica, pozo de agua, contingencias)
+// ---------------------------------------------------------------------
+
+model ServiceCharge {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  residenceId   String?  // null = prorrateado a todas las viviendas activas
+  residence     Residence? @relation(fields: [residenceId], references: [id], onDelete: Cascade)
+
+  type          String   // ELECTRIC_PLANT | WATER_WELL | CONTINGENCY | EXTRAORDINARY | REPAIR
+  title         String
+  description   String?
+
+  // Bimonetario al momento de la emisión
+  amountUSD     Float
+  amountVES     Float
+  bcvRateId     String
+  bcvRate       BcvRate  @relation(fields: [bcvRateId], references: [id])
+
+  dueDate       DateTime
+  status        String   @default("PENDING") // PENDING | PARTIAL | PAID | OVERDUE | CANCELLED
+
+  createdById   String?
+  createdBy     User?    @relation(fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([condominiumId])
+  @@index([status])
+  @@index([type])
+  @@index([dueDate])
+}
+
+// ---------------------------------------------------------------------
+// FACTURAS DE MANTENIMIENTO MENSUAL
+// ---------------------------------------------------------------------
+
+model Invoice {
+  id            String   @id @default(cuid())
+  residenceId   String
+  residence     Residence @relation(fields: [residenceId], references: [id], onDelete: Cascade)
+
+  period        String   // "2025-01"
+  amountUSD     Float
+  amountVES     Float
+  bcvRateId     String
+  bcvRate       BcvRate  @relation(fields: [bcvRateId], references: [id])
+
+  dueDate       DateTime
+  status        String   @default("PENDING") // PENDING | PAID | OVERDUE | PARTIAL
+  paidAmountUSD Float    @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@unique([residenceId, period])
+  @@index([status])
+  @@index([period])
+}
