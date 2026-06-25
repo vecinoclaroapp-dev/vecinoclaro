@@ -252,3 +252,128 @@ export function useInvoices(filters: { residenceId?: string; status?: string } =
     },
   });
 }
+
+// ---------------- Expenses ----------------
+export function useExpenses(filters: { category?: string; limit?: number } = {}) {
+  const params = new URLSearchParams();
+  if (filters.category) params.set("category", filters.category);
+  if (filters.limit) params.set("limit", String(filters.limit));
+
+  return useQuery({
+    queryKey: ["expenses", filters],
+    queryFn: async () => {
+      const r = await fetch(`/api/expenses?${params}`);
+      if (!r.ok) throw new Error("Error al cargar gastos");
+      return r.json();
+    },
+  });
+}
+
+export function useCreateExpense() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Record<string, unknown>) => {
+      const r = await fetch("/api/expenses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || "Error al crear gasto");
+      return j;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["expenses"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+      qc.invalidateQueries({ queryKey: ["budget"] });
+    },
+  });
+}
+
+// ---------------- Suppliers ----------------
+export function useSuppliers() {
+  return useQuery({
+    queryKey: ["suppliers"],
+    queryFn: async () => {
+      const r = await fetch("/api/suppliers");
+      if (!r.ok) throw new Error("Error al cargar proveedores");
+      return r.json();
+    },
+  });
+}
+
+export function useCreateSupplier() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Record<string, unknown>) => {
+      const r = await fetch("/api/suppliers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || "Error al crear proveedor");
+      return j;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["suppliers"] }),
+  });
+}
+
+// ---------------- Funds ----------------
+export function useFunds() {
+  return useQuery({
+    queryKey: ["funds"],
+    queryFn: async () => {
+      const r = await fetch("/api/funds");
+      if (!r.ok) throw new Error("Error al cargar fondos");
+      return r.json();
+    },
+  });
+}
+
+export function useCreateFund() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Record<string, unknown>) => {
+      const r = await fetch("/api/funds", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || "Error al crear fondo");
+      return j;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["funds"] }),
+  });
+}
+
+// ---------------- Budget ----------------
+export function useBudget(year?: number) {
+  const y = year ?? new Date().getFullYear();
+  return useQuery({
+    queryKey: ["budget", y],
+    queryFn: async () => {
+      const r = await fetch(`/api/budget?year=${y}`);
+      if (!r.ok) throw new Error("Error al cargar presupuesto");
+      return r.json();
+    },
+  });
+}
+
+export function useCreateBudget() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Record<string, unknown>) => {
+      const r = await fetch("/api/budget", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || "Error al crear presupuesto");
+      return j;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["budget"] }),
+  });
+}

@@ -24,13 +24,15 @@ import {
   User,
   Eye,
   EyeOff,
+  ArrowLeft,
 } from "lucide-react";
 
 type Props = {
   onAuthed: () => void;
+  onBack?: () => void;
 };
 
-export function AuthScreen({ onAuthed }: Props) {
+export function AuthScreen({ onAuthed, onBack }: Props) {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [showPass, setShowPass] = useState(false);
   const login = useLogin();
@@ -124,6 +126,16 @@ export function AuthScreen({ onAuthed }: Props) {
       {/* Lado derecho: Formulario */}
       <div className="flex items-center justify-center p-6 sm:p-12 bg-background">
         <div className="w-full max-w-md">
+          {/* Botón volver a landing */}
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5 mb-6"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" /> Volver al inicio
+            </button>
+          )}
+
           {/* Mobile brand */}
           <div className="lg:hidden flex items-center gap-3 mb-8 justify-center">
             <div className="h-11 w-11 rounded-xl bg-emerald-600 flex items-center justify-center">

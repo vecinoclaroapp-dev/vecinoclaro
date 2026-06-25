@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useMe } from "@/hooks/use-auth";
+import { LandingPage } from "@/components/landing/landing-page";
 import { AuthScreen } from "@/components/auth/auth-screen";
 import { OnboardingWizard } from "@/components/onboarding/onboarding-wizard";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -12,17 +13,22 @@ import { PaymentsView } from "@/components/payments/payments-view";
 import { LedgerView } from "@/components/ledger/ledger-view";
 import { ServicesView } from "@/components/services/services-view";
 import { InvoicesView } from "@/components/invoices/invoices-view";
+import { ExpensesView } from "@/components/expenses/expenses-view";
+import { BudgetView } from "@/components/budget/budget-view";
+import { FundsView } from "@/components/funds/funds-view";
 import { ReportsView } from "@/components/dashboard/reports-view";
 import { SettingsView } from "@/components/dashboard/settings-view";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppStore } from "@/store/app-store";
 
+type GuestView = "landing" | "auth";
+
 export default function Home() {
   const { data, isLoading, refetch } = useMe();
   const { view } = useAppStore();
   const [forceRefresh, setForceRefresh] = useState(0);
+  const [guestView, setGuestView] = useState<GuestView>("landing");
 
-  // Refresca `me` al montar (por si venimos de login)
   useEffect(() => {
     refetch();
   }, [refetch, forceRefresh]);
@@ -39,9 +45,22 @@ export default function Home() {
     );
   }
 
-  // 1) No autenticado → pantalla de auth
+  // 1) No autenticado → landing o auth (según guestView)
   if (!data?.user) {
-    return <AuthScreen onAuthed={() => setForceRefresh((n) => n + 1)} />;
+    if (guestView === "landing") {
+      return (
+        <LandingPage
+          onGetStarted={() => setGuestView("auth")}
+          onLogin={() => setGuestView("auth")}
+        />
+      );
+    }
+    return (
+      <AuthScreen
+        onAuthed={() => setForceRefresh((n) => n + 1)}
+        onBack={() => setGuestView("landing")}
+      />
+    );
   }
 
   // 2) Autenticado pero onboarding no completado → wizard
@@ -63,6 +82,9 @@ export default function Home() {
             {view === "ledger" && <LedgerView />}
             {view === "services" && <ServicesView />}
             {view === "invoices" && <InvoicesView />}
+            {view === "expenses" && <ExpensesView />}
+            {view === "budget" && <BudgetView />}
+            {view === "funds" && <FundsView />}
             {view === "reports" && <ReportsView />}
             {view === "settings" && <SettingsView />}
           </div>
@@ -75,9 +97,9 @@ export default function Home() {
               <span>Gestión bimonetaria para condominios venezolanos</span>
             </div>
             <div className="flex items-center gap-3">
-              <span>USD + VES · BCV · Ledger SHA-256</span>
+              <span>USD + VES · DolarApi BCV · Ledger SHA-256</span>
               <span>·</span>
-              <span>v2.0.0</span>
+              <span>v2.1.0</span>
             </div>
           </div>
         </footer>

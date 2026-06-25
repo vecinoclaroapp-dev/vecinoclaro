@@ -9,6 +9,9 @@ export type View =
   | "ledger"
   | "services"
   | "invoices"
+  | "expenses"
+  | "budget"
+  | "funds"
   | "reports"
   | "settings";
 

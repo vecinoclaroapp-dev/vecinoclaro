@@ -74,3 +74,80 @@ Stage Summary:
 - Aplicados principios de diseño Anthropic (hero con tesis, signature element, copy user-centric)
 - Restricción de ruta única / respetada: renderizado condicional en page.tsx
 - Funciones Vivook pendientes para Fase 3: Gastos/Proveedores, Presupuesto, Fondos, Cuentas por pagar, Comunicaciones (11 sub-funciones)
+
+---
+Task ID: 4
+Agent: 21st-dev-investigator
+Task: Investigar API HTTP directa de 21st.dev para consumo backend
+
+Work Log:
+- Leí worklog.md para contexto: proyecto CondominioDigital VE (Next.js 16 + shadcn/ui). Fase 2 completada, integración de componentes UI es siguiente paso.
+- `npm view @21st-dev/magic` → v0.1.0, paquete MCP (Model Context Protocol), bin `magic`, 6 deps (cors, express, open, zod, @modelcontextprotocol/sdk). Repo: github.com/21st-dev/magic-mcp.
+- `npm view @21st-dev/cli` → v0.0.29, instalador de configuración MCP para IDEs (Cursor/Windsurf/Cline/Claude), deps inquirer/commander — solo CLI interactivo, no API.
+- Instalé ambos en /tmp/21st-test. Examiné dist/index.js: registra 4 tools MCP: CreateUiTool, FetchUiTool, LogoSearchTool, RefineUiTool.
+- Leí dist/utils/http-client.js → BASE_URL = `https://magic.21st.dev` (NO api.21st.dev), header auth: `x-api-key: <key>`, métodos get/post/put/delete/patch.
+- Leí dist/tools/fetch-ui.js → endpoint real: `POST /api/fetch-ui` con body `{message, searchQuery}` → response `{text: "<stringified array>"}`. Este es el Inspiration Search.
+- Leí dist/tools/refine-ui.js → endpoint `POST /api/refine-ui` con body `{userMessage, fileContent, context}`.
+- Leí dist/tools/create-ui.js → NO llama API, abre browser (`open('http://21st.dev/magic-chat?...')`) y espera callback en puerto local 9221. Flujo interactivo, NO apto para backend headless.
+- Leí dist/tools/logo-search.js → NO usa 21st API, usa API pública SVGL (https://api.svgl.app) sin auth.
+- TEST LIVE del endpoint descubierto con la API_KEY proporcionada:
+  * `POST https://magic.21st.dev/api/fetch-ui` con header `x-api-key` y body `{"message":"...","searchQuery":"animated hero"}` → HTTP 200, response `{"text":"[{...}]"}`
+  * El campo `text` contiene un JSON stringificado: array de componentes, cada uno con keys: `demoName`, `demoCode` (ejemplo de uso), `componentName`, `componentCode` (código fuente plano completo), `registryDependencies` (componentes shadcn a instalar), `similarity` (score de búsqueda).
+  * Sin api key → HTTP 401 `{"text":"Missing API key header (x-api-key). Please visit https://21st.dev/magic/console..."}`. Auth confirmada.
+  * GET en /api/fetch-ui → 404 (solo POST soportado).
+  * Búsqueda "navbar" → 3 componentes: "Mega Menu" (4886 chars), "Navbar" (2861 chars), "Navbar with Animated Mega Dropdown" (19732 chars, framer-motion).
+  * Búsqueda "animated hero" → 3 componentes: "Shape Landing Hero" (HeroGeometric, con ElegantShape animado via framer-motion).
+- No hay documentación pública REST en 21st.dev (la home es app Next.js, no docs). El endpoint se descubrió por ingeniería inversa del paquete npm.
+
+Stage Summary:
+- CONCLUSIÓN: SÍ existe API HTTP REST directa consumible desde backend Node.js, aunque NO está públicamente documentada. Se descubrió por reverse-engineering del paquete @21st-dev/magic.
+- Endpoint funcional:
+  * URL: `POST https://magic.21st.dev/api/fetch-ui`
+  * Headers: `Content-Type: application/json`, `x-api-key: <API_KEY>`
+  * Body: `{"message": "<contexto>", "searchQuery": "<2-4 palabras>"}`
+  * Response: `{"text": "<JSON-stringified array>"}`
+  * Cada item: `{demoName, demoCode, componentName, componentCode, registryDependencies, similarity}`
+  * El `componentCode` es el código fuente plano listo para escribir a archivo.
+- Endpoint secundario: `POST https://magic.21st.dev/api/refine-ui` (mejora componentes existentes).
+- ENDPOINT `create-ui` (generación con IA) NO es consumible desde backend: requiere browser interactivo ( abre `http://21st.dev/magic-chat` y espera callback en localhost:9221).
+- COMPONENTE CONCRETO RECOMENDADO para inyectar en el proyecto: "Shape Landing Hero" (HeroGeometric) — hero animado con formas geométricas flotantes usando framer-motion, encontrado vía `searchQuery:"animated hero"`. Código fuente completo (7053 chars) obtenido en TEST 5. registryDependencies para instalar vía shadcn: se incluyen en la respuesta. Ideal para landing page de CondominioDigital VE.
+- SEGUNDA OPCIÓN: "Navbar with Animated Mega Dropdown" (19732 chars) para navbar con menú desplegable animado, obtenido vía `searchQuery:"animated navbar"`.
+- RECOMENDACIÓN AL JEFE: Integrar este endpoint en una server action / route handler de Next.js que reciba `searchQuery`, llame a magic.21st.dev/api/fetch-ui con la API_KEY (almacenada en env var `TWENTY_FIRST_API_KEY`), parse `JSON.parse(response.text)` y persista `componentCode` a `components/ui/<componentName>.tsx`. El `registryDependencies` permite ejecutar automáticamente `npx shadcn@latest add <deps>`.
+
+---
+Task ID: FASE-3
+Agent: main (Z.ai Code)
+Task: Fase 3 — DolarApi, 21st.dev, OAuth audit, módulos Gastos/Proveedores/Presupuesto/Fondos
+
+Work Log:
+- AUDITORIA Fase 1 y 2: ✅ TODO COMPLETO (29 modelos schema, auth NextAuth, onboarding 4 pasos, data en 0, lint 0 errores)
+- DOLARAPI: Reescribí bcv.ts con fetch a https://ve.dolarapi.com/v1/cotizaciones + try/catch estricto de 3 niveles (DolarApi → BD → fallback default)
+- DOLARAPI UI: Topbar con widget "Tasa BCV: 621,53 VES" + botón Sincronizar + Popover con input manual si falla
+- DOLARAPI verificado end-to-end: POST /api/bcv devuelve {"rate":621.53,"source":"DOLARAPI","isFallback":false}
+- 21ST DEV: Subagente encontró endpoint HTTP directo POST https://magic.21st.dev/api/fetch-ui con header x-api-key
+- 21ST DEV: Descargué componente "Shape Landing Hero" (7098 chars, framer-motion) vía API, lo guardé en components/ui/shape-landing-hero.tsx
+- 21ST DEV: Adapté el hero a paleta emerald/amber (no indigo/rose/violet del original)
+- LANDING PÚBLICA: Creé landing-page.tsx con Hero animado + features + how it works + CTA + footer
+- PAGE.TSX: Renderizado condicional 4 estados: landing → auth → onboarding → app
+- OAUTH alternativas: Google OAuth configurado (falta credentials), CredentialsProvider funcionando, botón Google se oculta si no hay credentials
+- FASE 3.1 Gastos y Proveedores: API CRUD + vista con tabs (gastos/proveedores) + formularios + tabla con filtros
+- FASE 3.2 Presupuesto: API con upsert + comparación presupuestado vs real (cruza con gastos) + vista con progress bars
+- FASE 3.3 Fondos: API CRUD + vista con cards por tipo (ordinario/reserva/extraordinario/remodelación) + metas con progress
+- SIDEBAR: Agregué 3 nuevas entradas (Gastos, Presupuesto, Fondos) con íconos Receipt/Target/Wallet
+- Verificación Agent Browser end-to-end:
+  * Landing con hero animado carga (título "Administra tu condominio en dólares y bolívares")
+  * Login admin3@testcondo.ve funciona
+  * Topbar muestra "Tasa BCV: 621,53 VES" (DolarApi real)
+  * Sincronizar BCV funciona (POST 200)
+  * Gastos: registré "Pago electricidad Corpoelec" USD 120 → Bs.S 74.583,60 (120 × 621,53) ✓
+  * Fondos: creé "Fondo de Reserva 2025" saldo USD 500, meta USD 5000 ✓
+  * Presupuesto: asigné MANTENIMIENTO USD 2000 anual → muestra ejecutado USD 120, varianza +USD 1880, 6% ✓
+  * Sin errores en consola ni dev log
+
+Stage Summary:
+- DolarApi.com integrado y funcionando: tasa BCV real 621,53 Bs/USD consultada exitosamente desde el sandbox
+- 21st.dev API HTTP directa descubierta y usada: componente Hero descargado e integrado en landing
+- Landing pública completa con hero animado (framer-motion) siguiendo principios Anthropic
+- 3 módulos nuevos operativos: Gastos/Proveedores, Presupuesto, Fondos
+- Sistema bimonetario indexando correctamente con tasa real DolarApi en todos los cálculos
+- Stack: 29 modelos Prisma, 14 APIs REST, 11 vistas SPA, NextAuth, React Query, Zustand

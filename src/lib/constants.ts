@@ -115,9 +115,12 @@ export const RESIDENCE_TYPES = [
 
 // BCV: endpoints y defaults
 export const BCV_SOURCES = {
-  BCV: "BCV (oficial)",
+  DOLARAPI: "DolarApi.com (BCV oficial)",
+  BCV: "BCV (almacenado)",
   MANUAL: "Manual",
-  API: "API externa",
+  FALLBACK_BD: "Última tasa guardada",
+  FALLBACK_DEFAULT: "Tasa de respaldo",
 } as const;
 
-export const DEFAULT_FALLBACK_RATE = 145.5; // tasa de respaldo si BCV no responde
+export const DOLARAPI_ENDPOINT = "https://ve.dolarapi.com/v1/cotizaciones";
+export const DEFAULT_FALLBACK_RATE = 621.5; // tasa de respaldo si DolarApi no responde
