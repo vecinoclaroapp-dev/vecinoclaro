@@ -34,7 +34,7 @@ export function LandingPage({ onGetStarted, onLogin }: Props) {
               <Building2 className="h-5 w-5 text-white" />
             </div>
             <div className="text-white">
-              <p className="font-bold text-sm leading-tight">CondominioDigital</p>
+              <p className="font-bold text-sm leading-tight">VecinoClaro</p>
               <p className="text-[10px] text-emerald-300 leading-tight tracking-wider">VENEZUELA</p>
             </div>
           </div>
@@ -89,7 +89,7 @@ export function LandingPage({ onGetStarted, onLogin }: Props) {
       {/* ===== HERO con componente 21st.dev ===== */}
       <div className="pt-16">
         <HeroGeometric
-          badge="CondominioDigital VE · Bimonetario"
+          badge="VecinoClaro · Bimonetario"
           title1="Administra tu condominio"
           title2="en dólares y bolívares"
           subtitle="La plataforma hecha para la realidad venezolana. Tasa BCV automática, pago móvil, Zelle y libro contable inmutable con auditoría criptográfica."
@@ -228,7 +228,7 @@ export function LandingPage({ onGetStarted, onLogin }: Props) {
               <Building2 className="h-5 w-5 text-white" />
             </div>
             <div>
-              <p className="font-bold text-sm">CondominioDigital VE</p>
+              <p className="font-bold text-sm">VecinoClaro</p>
               <p className="text-xs text-muted-foreground">Gestión bimonetaria · v2.1.0</p>
             </div>
           </div>

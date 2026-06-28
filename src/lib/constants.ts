@@ -1,5 +1,5 @@
 // =====================================================================
-// Constantes de dominio — CondominioDigital VE
+// Constantes de dominio — VecinoClaro
 // =====================================================================
 
 export type PaymentMethod =

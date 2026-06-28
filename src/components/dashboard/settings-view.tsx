@@ -196,7 +196,7 @@ export function SettingsView() {
               <FileText className="h-4 w-4 text-emerald-600" />
               <div>
                 <p className="text-sm font-medium">Versión del sistema</p>
-                <p className="text-xs text-muted-foreground">CondominioDigital VE 1.0.0</p>
+                <p className="text-xs text-muted-foreground">VecinoClaro 1.0.0</p>
               </div>
             </div>
             <Badge variant="outline">Producción</Badge>

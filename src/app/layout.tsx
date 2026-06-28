@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CondominioDigital VE — Gestión Bimonetaria",
+  title: "VecinoClaro — Gestión Bimonetaria",
   description:
     "Plataforma SaaS para gestión de condominios en Venezuela. Contabilidad bimonetaria USD/VES, tasa BCV dinámica, pagos locales y servicios críticos.",
   keywords: [
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     "Zelle",
     "gestión inmobiliaria",
   ],
-  authors: [{ name: "CondominioDigital VE" }],
+  authors: [{ name: "VecinoClaro" }],
 };
 
 export default function RootLayout({

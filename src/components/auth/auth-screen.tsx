@@ -83,7 +83,7 @@ export function AuthScreen({ onAuthed, onBack }: Props) {
               <Building2 className="h-6 w-6" />
             </div>
             <div>
-              <p className="font-bold text-lg leading-tight">CondominioDigital</p>
+              <p className="font-bold text-lg leading-tight">VecinoClaro</p>
               <p className="text-xs text-amber-300 leading-tight tracking-wider font-semibold">VENEZUELA</p>
             </div>
           </div>
@@ -142,7 +142,7 @@ export function AuthScreen({ onAuthed, onBack }: Props) {
               <Building2 className="h-6 w-6 text-white" />
             </div>
             <div>
-              <p className="font-bold text-lg leading-tight">CondominioDigital</p>
+              <p className="font-bold text-lg leading-tight">VecinoClaro</p>
               <p className="text-xs text-muted-foreground leading-tight tracking-wider">VENEZUELA</p>
             </div>
           </div>

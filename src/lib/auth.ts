@@ -1,5 +1,5 @@
 // =====================================================================
-// Configuración NextAuth.js — CondominioDigital VE
+// Configuración NextAuth.js — VecinoClaro
 // =====================================================================
 
 import type { NextAuthOptions } from "next-auth";

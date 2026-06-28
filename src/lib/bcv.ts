@@ -49,7 +49,7 @@ export async function fetchBcvRate(): Promise<BcvResult> {
       signal: controller.signal,
       headers: {
         Accept: "application/json",
-        "User-Agent": "CondominioDigitalVE/2.0",
+        "User-Agent": "VecinoClaro/2.0",
       },
       // No cache — siempre traer la fresca
       cache: "no-store",

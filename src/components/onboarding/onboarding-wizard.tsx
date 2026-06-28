@@ -138,7 +138,7 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
   const finish = async () => {
     try {
       await runStep.mutateAsync({ step: "complete" });
-      toast.success("¡Todo listo! Bienvenido a CondominioDigital VE");
+      toast.success("¡Todo listo! Bienvenido a VecinoClaro");
       onComplete();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Error");

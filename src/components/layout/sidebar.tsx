@@ -82,7 +82,7 @@ export function Sidebar() {
               <Building2 className="h-5 w-5 text-white" />
             </div>
             <div className="min-w-0">
-              <p className="font-bold text-sm leading-tight truncate">CondominioDigital</p>
+              <p className="font-bold text-sm leading-tight truncate">VecinoClaro</p>
               <p className="text-[11px] text-muted-foreground leading-tight font-medium tracking-wide">VE · Bimonetario</p>
             </div>
           </div>

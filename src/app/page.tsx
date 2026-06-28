@@ -92,7 +92,7 @@ export default function Home() {
         <footer className="mt-auto border-t border-border bg-card/50 py-4 px-6">
           <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-foreground">CondominioDigital VE</span>
+              <span className="font-semibold text-foreground">VecinoClaro</span>
               <span>·</span>
               <span>Gestión bimonetaria para condominios venezolanos</span>
             </div>

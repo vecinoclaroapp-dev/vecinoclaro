@@ -1,5 +1,5 @@
 // =====================================================================
-// Seed de demostración — CondominioDigital VE
+// Seed de demostración — VecinoClaro
 // Ejecutar: bun run src/lib/seed.ts
 // =====================================================================
 
