@@ -3,10 +3,9 @@
 import { motion, useReducedMotion } from "framer-motion";
 import {
   ShieldCheck, Home, CheckCircle2, Lock, Eye, Database,
-  Fingerprint, FileCheck2, Server, Globe2, Quote,
+  FileCheck2, Server, Globe2, Quote, Star,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
 
 type Props = {
   onGetStarted: () => void;
@@ -88,82 +87,132 @@ function StatCard({
   );
 }
 
-// ---------- Visualización de la hash chain ----------
-function HashChainVisual() {
-  const blocks = [
-    { id: "Bloque 0", hash: "8a3f…d1c2", tx: "Pago Móvil · 3-A · USD 45" },
-    { id: "Bloque 1", hash: "f2b9…7e40", tx: "Gasto · Pintura fachada" },
-    { id: "Bloque 2", hash: "1c4d…a93f", tx: "Pago Móvil · 4-B · Bs 27.990" },
-  ];
+// ---------- Testimonios ----------
+type Testimonial = {
+  quote: string;
+  name: string;
+  role: string;
+  initials: string;
+  gradient: string;
+  highlight?: boolean;
+};
+
+const testimonials: Testimonial[] = [
+  {
+    quote:
+      "Por fin puedo mostrar a los vecinos exactamente dónde está cada bolívar. La cadena de transacciones nos devolvió la confianza que habíamos perdido con las planillas de Excel.",
+    name: "María Rodríguez",
+    role: "Admin · Residencias Los Olivos, Caracas",
+    initials: "MR",
+    gradient: "from-emerald-400 to-amber-400",
+    highlight: true,
+  },
+  {
+    quote:
+      "La verificación de comprobantes con IA me ahorra unas 6 horas semanales. Ya no tengo que revisar captura por captura en WhatsApp.",
+    name: "José Martínez",
+    role: "Tesorero · Torre Miranda, Valencia",
+    initials: "JM",
+    gradient: "from-amber-400 to-rose-400",
+  },
+  {
+    quote:
+      "Mis vecinos pagan por Pago Móvil y en segundos el sistema lo detecta. La conciliación que antes tomaba 3 días ahora es automática.",
+    name: "Carolina Pérez",
+    role: "Admin · Conjunto Las Acacias, Maracay",
+    initials: "CP",
+    gradient: "from-violet-400 to-emerald-400",
+  },
+  {
+    quote:
+      "Como residente, ver mi saldo en USD y Bs al mismo tiempo con la tasa BCV del día me da tranquilidad. Sé exactamente cuánto debo.",
+    name: "Luis Hernández",
+    role: "Residente · Edificio Bolívar, Barquisimeto",
+    initials: "LH",
+    gradient: "from-sky-400 to-violet-400",
+  },
+  {
+    quote:
+      "Las votaciones por indiviso respetan la Ley de Propiedad Horizontal. Las asambleas ya no son un caos de manos levantadas.",
+    name: "Ana Gómez",
+    role: "Moderadora · Residencias El Ávila, Caracas",
+    initials: "AG",
+    gradient: "from-rose-400 to-amber-400",
+  },
+];
+
+function TestimonialsSection() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.6 }}
-      className="rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-950/40 via-card to-amber-950/20 p-5 sm:p-6 relative overflow-hidden"
-    >
-      <div className="absolute -top-16 -right-16 h-40 w-40 bg-emerald-500/10 rounded-full blur-3xl" />
-      <div className="relative z-10">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="h-8 w-8 rounded-lg bg-emerald-500/15 flex items-center justify-center">
-            <Fingerprint className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <div>
-            <div className="text-xs font-bold">Cadena inmutable de transacciones</div>
-            <div className="text-[10px] text-muted-foreground">Cada bloque sella el anterior con SHA-256</div>
-          </div>
-          <span className="ml-auto text-[9px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
-            <Lock className="h-2.5 w-2.5" /> Audit-ready
-          </span>
-        </div>
+    <div className="mb-12">
+      {/* Título de la subsección */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="text-center mb-8"
+      >
+        <motion.span
+          initial={{ scale: 0.9, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          viewport={{ once: true }}
+          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-[11px] font-semibold uppercase tracking-wide mb-3"
+        >
+          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+          Lo que dicen quienes ya lo usan
+        </motion.span>
+        <h3 className="text-2xl sm:text-3xl font-bold tracking-tight">Testimonios</h3>
+      </motion.div>
 
-        <div className="space-y-2">
-          {blocks.map((b, i) => (
-            <motion.div
-              key={b.id}
-              initial={{ opacity: 0, x: -16 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 + i * 0.18, duration: 0.5 }}
-              className="flex items-center gap-3 rounded-xl border border-foreground/10 bg-background/60 p-3"
-            >
-              <div className="flex flex-col items-center">
-                <div className="h-9 w-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center font-mono text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
-                  #{i}
-                </div>
-                {i < blocks.length - 1 && (
-                  <motion.div
-                    className="w-px h-3 bg-emerald-500/40"
-                    initial={{ scaleY: 0 }}
-                    whileInView={{ scaleY: 1 }}
+      {/* Grid de testimonios: 1 destacado + 4 pequeños */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {testimonials.map((t, i) => (
+          <motion.div
+            key={t.name}
+            initial={{ opacity: 0, y: 24, scale: 0.97 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.5, delay: i * 0.1, ease: [0.23, 1, 0.32, 1] }}
+            whileHover={{ y: -4 }}
+            className={`rounded-2xl border bg-card p-5 sm:p-6 relative overflow-hidden group shadow-sm hover:shadow-lg transition-all flex flex-col ${
+              t.highlight ? "md:col-span-2 lg:col-span-1 lg:row-span-2" : ""
+            }`}
+          >
+            <div className={`absolute -top-12 -right-12 h-32 w-32 rounded-full bg-gradient-to-br ${t.gradient} opacity-10 blur-2xl group-hover:opacity-20 transition-opacity`} />
+            <div className="relative z-10 flex flex-col h-full">
+              <Quote className={`h-7 w-7 mb-3 ${t.highlight ? "text-amber-500/50" : "text-emerald-500/40"}`} />
+              <p className={`leading-relaxed text-foreground flex-1 ${t.highlight ? "text-base sm:text-lg" : "text-sm"}`}>
+                &ldquo;{t.quote}&rdquo;
+              </p>
+              {/* Estrellas */}
+              <div className="flex items-center gap-0.5 mt-4">
+                {[0, 1, 2, 3, 4].map((s) => (
+                  <motion.span
+                    key={s}
+                    initial={{ opacity: 0, scale: 0 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
-                    transition={{ delay: 0.3 + i * 0.18 }}
-                  />
-                )}
+                    transition={{ delay: 0.3 + i * 0.1 + s * 0.05, type: "spring", stiffness: 200 }}
+                  >
+                    <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                  </motion.span>
+                ))}
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-[11px] font-medium truncate">{b.tx}</div>
-                <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground mt-0.5">
-                  <FileCheck2 className="h-2.5 w-2.5 text-emerald-500" />
-                  <span className="font-mono">sha256: {b.hash}</span>
-                  <CheckCircle2 className="h-2.5 w-2.5 text-emerald-500 ml-auto" />
+              {/* Autor */}
+              <div className="flex items-center gap-3 mt-4 pt-4 border-t border-foreground/10">
+                <div className={`h-9 w-9 rounded-full bg-gradient-to-br ${t.gradient} flex items-center justify-center text-white font-bold text-xs shrink-0`}>
+                  {t.initials}
+                </div>
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold truncate">{t.name}</div>
+                  <div className="text-[11px] text-muted-foreground truncate">{t.role}</div>
                 </div>
               </div>
-            </motion.div>
-          ))}
-        </div>
-
-        <div className="mt-3 flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
-          <motion.span
-            className="h-1.5 w-1.5 rounded-full bg-emerald-500"
-            animate={{ opacity: [1, 0.3, 1] }}
-            transition={{ duration: 1.6, repeat: Infinity }}
-          />
-          Verificado en tiempo real · No se puede alterar retroactivamente
-        </div>
+            </div>
+          </motion.div>
+        ))}
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -249,54 +298,11 @@ export function StatsSection({ onGetStarted }: Props) {
           ))}
         </div>
 
-        {/* Hash chain visual + quote */}
-        <div className="grid lg:grid-cols-5 gap-4 mb-12">
-          <div className="lg:col-span-3">
-            <HashChainVisual />
-          </div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-40px" }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="lg:col-span-2 rounded-2xl border bg-card p-6 flex flex-col justify-between relative overflow-hidden"
-          >
-            <div className="absolute -bottom-10 -right-10 h-32 w-32 bg-amber-500/10 rounded-full blur-3xl" />
-            <div className="relative z-10">
-              <Quote className="h-7 w-7 text-amber-500/40 mb-3" />
-              <p className="text-sm leading-relaxed text-foreground">
-                &ldquo;Por fin puedo mostrar a los vecinos exactamente dónde está cada bolívar. La hash chain nos
-                devolvió la confianza que habíamos perdido con las planillas de Excel.&rdquo;
-              </p>
-            </div>
-            <div className="relative z-10 flex items-center gap-3 mt-5 pt-4 border-t">
-              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-emerald-400 to-amber-400 flex items-center justify-center text-white font-bold text-xs">
-                MR
-              </div>
-              <div>
-                <div className="text-xs font-semibold">María Rodríguez</div>
-                <div className="text-[10px] text-muted-foreground">Admin · Residencias Los Olivos, Caracas</div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
+        {/* Testimonios */}
+        <TestimonialsSection />
 
         {/* Trust badges */}
         <TrustBadges />
-
-        {/* CTA final */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="text-center mt-12"
-        >
-          <Button size="lg" onClick={onGetStarted} className="rounded-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 px-8">
-            Empieza hoy — es gratis
-          </Button>
-          <p className="text-xs text-muted-foreground mt-3">Sin tarjeta de crédito · Cancela cuando quieras</p>
-        </motion.div>
       </div>
     </section>
   );

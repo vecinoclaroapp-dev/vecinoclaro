@@ -366,3 +366,28 @@ Stage Summary:
 - Responsive verificado mobile (390px) + desktop (1440px)
 - reduced-motion respetado en useCountUp y backgrounds
 - Lint limpio, dev server sin errores de runtime
+
+---
+Task ID: LANDING-TWEAKS-4
+Agent: main (Z.ai Code)
+Task: 3 ajustes puntuales en la landing: (1) borrar CTA final "Empieza hoy — es gratis" del stats, (2) reemplazar el hash chain visual por una sección de "Testimonios", (3) bajar el badge del hero para que no esté pegado al navbar.
+
+Work Log:
+- Leí worklog.md y los archivos: src/components/ui/shape-landing-hero.tsx y src/components/landing/stats-section.tsx
+- Hero badge: cambié `py-20` → `pt-44 pb-16` en el contenedor flex del HeroGeometric. Al mantener `items-center` con padding asimétrico (11rem top / 4rem bottom), el bloque centrado se desplaza hacia abajo, dando aire entre el navbar fijo y el badge "VecinoClaro · Cuentas Claras, Vecinos Claros"
+- Stats section: 
+  * Reemplacé el componente `HashChainVisual` (bloques sha256 #0/#1/#2 + "Cadena inmutable de transacciones" + "Audit-ready") por `TestimonialsSection` con grid de 5 testimonios
+  * Testimonios: María Rodríguez (destacada, col-span-2 en md), José Martínez, Carolina Pérez, Luis Hernández, Ana Gómez — cada uno con quote, avatar gradiente, nombre, rol (ciudad VE), y 5 estrellas doradas con animación spring escalonada
+  * Sub-título "Testimonios" con badge "Lo que dicen quienes ya lo usan"
+  * Borre el CTA final "Empieza hoy — es gratis / Sin tarjeta de crédito · Cancela cuando quieras"
+  * Limpié imports: removí `Fingerprint` y `Button` (ya no usados), añadí `Star`
+- Lint: `bun run lint` → 0 errores, 0 warnings
+- Verificación con Agent Browser + VLM:
+  * Hero badge: "ESPACIO SUFICIENTE" entre navbar y badge ✓
+  * DOM checks: "Testimonios" presente ✓, "Cadena inmutable" removido ✓, CTA "Sin tarjeta de crédito" removido del stats ✓ (el "Empieza hoy" que detecta el DOM es del CinematicFooter, no del stats — verificado con querySelector('footer'))
+  * Visual VLM: subtítulo "Testimonios" visible, 5 tarjetas con estrellas doradas y avatares, bien renderizadas, nada roto ✓
+
+Stage Summary:
+- shape-landing-hero.tsx: padding top aumentado (py-20 → pt-44 pb-16) para separar badge del navbar
+- stats-section.tsx: HashChainVisual eliminado, TestimonialsSection añadido (5 testimonios VE con stars animadas), CTA final eliminado, imports limpiados
+- 3 cambios solicitados completados y verificados visualmente
