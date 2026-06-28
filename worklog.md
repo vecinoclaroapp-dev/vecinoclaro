@@ -250,3 +250,90 @@ Stage Summary:
 - Mejoras aplicadas: globals.css (tipografía, contraste bimonetario, transiciones), 3 componentes compartidos (EmptyState/PageHeader/SectionHeader), landing con navbar fija + hero balanceado, auth con mejor contraste, dashboard sin duplicación de tasa BCV + acciones rápidas, 5 estados vacíos rediseñados
 - Verificación VLM post-mejora: landing OK, auth OK, dashboard OK, app OK, móvil OK
 - Plataforma lista para Fase 4 (Comunicaciones)
+
+---
+Task ID: REBUILD-VIEWS
+Agent: view-rebuilder
+Task: Recrear vistas perdidas Fase 4-10
+
+Work Log:
+- Leí worklog.md y verifiqué estructura existente del proyecto (Next.js 16 + Prisma + shadcn/ui + Tailwind 4, paleta emerald/amber)
+- Confirmé que use-auth.ts ya existe con todos los hooks solicitados (useMe, useRegister, useLogin, useLogout, useOnboardingStep, useCompleteOnboarding) — no fue necesario recrearlo
+- Creé 14 directorios de componentes: polls, announcements, requests, facilities, calendar, messages, marketplace, documents, works, directory, security, resident, admin, payments (este último ya existía)
+- Implementé 25 vistas client-side con shadcn/ui, useQuery/useMutation directos de @tanstack/react-query, fetch en queryFn, estados loading (Skeleton) + empty (EmptyState con icono de lucide-react)
+- Cada vista incluye: PageHeader, lista/grid con Cards, Dialog para crear/editar, toasts con sonner, imports cn de @/lib/utils, paleta emerald/amber
+- Implementé src/hooks/use-resident.ts con useResidentMe (GET /api/residents/me) + useLogout
+- Implementé src/store/resident-store.ts con zustand (ResidentView type = "dashboard"|"payments"|"invoices"|"announcements"|"polls"|"requests"|"profile" + sidebarOpen)
+- Implementé src/components/auth/role-selector-screen.tsx (selector admin vs residente, props onSelectAdmin/onSelectResident/onBack)
+- Implementé src/components/auth/resident-join-screen.tsx (código de invitación + vivienda + cuenta, props onAuthed/onBack)
+- Lint inicial: 4 errores en resident-sidebar.tsx (componentes NavList/UserCard definidos dentro de render) y resident-profile.tsx (setState en effect) → refactoricé ambos:
+  * Sidebar: extraje NavList, UserCard y BrandHeader como componentes top-level que reciben props (view/setView, name/residenceLabel)
+  * Profile: extraje ProfileForm como componente hijo con key={resident.id} para remontar y usar useState lazy initializer con initialName/initialPhone
+- Lint final: 0 errores, 0 warnings
+
+Stage Summary:
+- 25 vistas recreadas + 1 hook (use-resident.ts) + 1 store (resident-store.ts) + 2 pantallas auth (role-selector, resident-join), todas lint-clean
+- Cada vista usa patrones consistentes: PageHeader + EmptyState + Skeleton loading + Dialog para crear/editar
+- Paleta respetada: emerald primario, amber acento, NO indigo/blue
+- Iconos lucide-react, toast de sonner, cn de @/lib/utils
+- APIs llamadas con fetch directo en queryFn (no hooks externos inexistentes), useQuery/useMutation de @tanstack/react-query directamente
+- Archivos creados (lista completa):
+  * src/components/polls/polls-view.tsx (PollsView)
+  * src/components/announcements/announcements-view.tsx (AnnouncementsView con tabs avisos/morosos)
+  * src/components/requests/requests-view.tsx (RequestsView)
+  * src/components/facilities/facilities-view.tsx (FacilitiesView)
+  * src/components/calendar/calendar-view.tsx (CalendarView con grid mensual)
+  * src/components/messages/messages-view.tsx (MessagesView con scroll + búsqueda)
+  * src/components/marketplace/marketplace-view.tsx (MarketplaceView)
+  * src/components/documents/documents-view.tsx (DocumentsView)
+  * src/components/works/works-view.tsx (WorksView con progress bar)
+  * src/components/directory/directory-view.tsx (DirectoryView con filtros por rol)
+  * src/components/security/visitors-view.tsx (VisitorsView con check-in/out)
+  * src/components/security/vehicles-view.tsx (VehiclesView)
+  * src/components/security/alerts-view.tsx (AlertsView con severidad + resolver)
+  * src/components/security/access-log-view.tsx (AccessLogView con búsqueda + filtro IN/OUT)
+  * src/components/admin/invite-code-view.tsx (InviteCodeView con copiar/regenerar)
+  * src/components/admin/team-view.tsx (TeamView con roles ADMIN/STAFF/VIEWER)
+  * src/components/admin/module-config-view.tsx (ModuleConfigView con switches)
+  * src/components/admin/payment-references-view.tsx (PaymentReferencesView con bancos VE)
+  * src/components/payments/receipts-view.tsx (ReceiptsView)
+  * src/components/payments/unified-payments-view.tsx (UnifiedPaymentsView con tabs Pagos/Comprobantes/Cuentas)
+  * src/components/resident/resident-sidebar.tsx (ResidentSidebar con 7 items nav)
+  * src/components/resident/resident-dashboard.tsx (ResidentDashboard con saldo, facturas, pagos)
+  * src/components/resident/resident-payments-v2.tsx (ResidentPaymentsV2 con código de pago + uploader)
+  * src/components/resident/resident-invoices.tsx (ResidentInvoices)
+  * src/components/resident/resident-announcements.tsx (ResidentAnnouncements)
+  * src/components/resident/resident-polls.tsx (ResidentPolls con "ya votaste")
+  * src/components/resident/resident-requests.tsx (ResidentRequests)
+  * src/components/resident/resident-profile.tsx (ResidentProfile con ProfileForm aislado)
+  * src/components/auth/role-selector-screen.tsx (RoleSelectorScreen)
+  * src/components/auth/resident-join-screen.tsx (ResidentJoinScreen con 2 pasos)
+  * src/hooks/use-resident.ts (useResidentMe + useLogout)
+  * src/store/resident-store.ts (zustand store)
+
+---
+## REBUILD-APIS — Recrear APIs perdidas (Fase 4-10)
+- **Schema Prisma**: extendido con 14 modelos nuevos (PollVote, MarketplaceListing, Work, DirectoryEntry, Visitor, Vehicle, SecurityAlert, AccessLogEntry, Notification, TeamInvite, ModuleConfig, BillingConfig, Receipt, PaymentReference) + campos `Condominium.inviteCode` y `Residence.joinCode` + back-relaciones en Condominium/Poll/PollOption. `bun run db:push` exitoso.
+- **Libs nuevas**: `src/lib/notifications.ts` (createNotification + createNotificationForMembers), `src/lib/groq.ts` (analyzeReceiptWithGroq placeholder), `src/lib/modules-list.ts` (MODULE_KEYS compartido).
+- **43 archivos de API creados** (40 requeridos + 3 bonus para soporte de vistas):
+  - polls (GET+POST admin) + polls/[id]/vote (peso por alícuota)
+  - announcements (GET+POST notifica), morosos (GET sin ownerName)
+  - requests (GET filtra por residente + POST) + requests/[id] (PATCH)
+  - facilities (GET+POST admin) + facilities/reservations (GET+POST con anti-solapamiento)
+  - calendar (GET+POST admin), messages (GET sender/recipient + POST)
+  - marketplace, documents, works (admin), directory
+  - visitors (GET+POST, AccessLogEntry en check-in) + visitors/[id] (PATCH authorize/deny/checkin/checkout)
+  - vehicles (admin, unique plate), security-alerts (GET+POST notifica), access-log (admin only)
+  - notifications (GET+PATCH mark-read) + notifications/[id] (PATCH+DELETE ownership)
+  - team (GET+POST invitar token crypto) + team/[id] (PATCH rol/DELETE) + team/join (POST token)
+  - modules (GET mapa + POST toggle admin) + billing-config (GET auto-crea + POST admin)
+  - invoices/generate (POST batch período × alícuota) + invoices/late-fees (POST mora con grace days → asiento PENALTY)
+  - receipts (GET+POST con OCR Groq opcional) + receipts/[id] (GET+PATCH approve/reject) + receipts/[id]/ocr (POST re-analizar)
+  - payment-references (GET+POST) + payment-references/me (GET)
+  - bank-accounts (GET+POST admin), condominium/invite (GET+POST regenerar 8-char)
+  - residents (GET admin) + residents/me (GET data completa) + residents/join (POST joinCode) + residents/link (POST admin por email)
+  - reports/export (GET CSV: residents|morosos|payments|invoices|expenses, admin only)
+  - **Bonus**: modules/[key] (PATCH toggle), payment-references/[id] (DELETE), residents/me/payments (GET+POST)
+- Todas usan `getUserContext` + `unauthorized`/`noCondominium` + checks de rol admin (`membership?.role !== "ADMIN"`) + validación de pertenencia al condominio.
+- **Lint final: `bun run lint` → EXIT 0, 0 errores, 0 warnings.** Mis 43 archivos API están type-clean (verificado con `tsc --noEmit`). Errores tsc preexistentes en auth/me/onboarding (getServerSession import + `never[]` push) no son de esta tarea.
+- Reporte completo en `/agent-ctx/REBUILD-APIS-api-rebuilder.md`.

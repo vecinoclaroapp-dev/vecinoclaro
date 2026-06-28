@@ -98,6 +98,7 @@ model Condominium {
   reserveFund     Float    @default(0) // fondo de reserva acumulado en USD
   logoUrl         String?
   primaryColor    String?  // color de marca del condominio
+  inviteCode      String?  // código de invitación para residentes
   setupComplete   Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -117,6 +118,19 @@ model Condominium {
   requests        ResidentRequest[]
   documents       Document[]
   tasks           AdminTask[]
+  // Módulos extendidos
+  marketplaceListings MarketplaceListing[]
+  works               Work[]
+  directoryEntries    DirectoryEntry[]
+  visitors            Visitor[]
+  vehicles            Vehicle[]
+  securityAlerts      SecurityAlert[]
+  accessLogs          AccessLogEntry[]
+  teamInvites         TeamInvite[]
+  moduleConfigs       ModuleConfig[]
+  billingConfig       BillingConfig?
+  receipts            Receipt[]
+  paymentReferences   PaymentReference[]
 }
 
 model CondominiumMember {
@@ -148,6 +162,7 @@ model Residence {
   ownerEmail    String?
   residentName  String?
   residentPhone String?
+  joinCode      String?  // código para que un residente se vincule a esta vivienda
   active        Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -595,6 +610,7 @@ model Poll {
   createdAt     DateTime @default(now())
 
   options       PollOption[]
+  votes         PollVote[]
 }
 
 model PollOption {
@@ -604,6 +620,8 @@ model PollOption {
   text      String
   votes     Int      @default(0)
   createdAt DateTime @default(now())
+
+  voteRecords PollVote[]
 
   @@index([pollId])
 }
@@ -656,4 +674,266 @@ model Message {
 
   @@index([senderId])
   @@index([recipientId])
+}
+
+// ---------------------------------------------------------------------
+// MÓDULOS EXTENDIDOS (Fase 4-10) — VecinoClaro
+// ---------------------------------------------------------------------
+
+model PollVote {
+  id           String     @id @default(cuid())
+  pollId       String
+  poll         Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  optionId     String
+  option       PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  userId       String
+  residenceId  String?
+  weight       Float      @default(1) // peso por indiviso/alícuota
+  createdAt    DateTime   @default(now())
+
+  @@unique([pollId, userId])
+  @@index([pollId])
+  @@index([optionId])
+}
+
+model MarketplaceListing {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  userId        String
+  title         String
+  description   String?
+  price         Float
+  currency      String   @default("USD")
+  category      String   @default("Otros")
+  condition     String   @default("USED") // NEW | USED | REFURBISHED
+  sellerName    String?
+  sellerPhone   String?
+  location      String?
+  imageUrl      String?
+  status        String   @default("ACTIVE") // ACTIVE | SOLD | REMOVED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([condominiumId])
+  @@index([status])
+}
+
+model Work {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  type          String   @default("REPAIR") // REPAIR | MAINTENANCE | IMPROVEMENT | INSPECTION
+  status        String   @default("PLANNED") // PLANNED | IN_PROGRESS | COMPLETED | CANCELLED
+  progress      Int      @default(0) // 0-100
+  startDate     DateTime?
+  endDate       DateTime?
+  budgetUSD     Float?
+  spentUSD      Float    @default(0)
+  contractor    String?
+  location      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([condominiumId])
+  @@index([status])
+}
+
+model DirectoryEntry {
+  id             String   @id @default(cuid())
+  condominiumId  String
+  condominium    Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  name           String
+  role           String   // ADMIN | STAFF | RESIDENT | SECURITY | MAINTENANCE | OTHER
+  phone          String?
+  email          String?
+  category       String   @default("RESIDENT")
+  residenceLabel String?
+  notes          String?
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  @@index([condominiumId])
+}
+
+model Visitor {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  name          String
+  documentId    String?
+  phone         String?
+  company       String?
+  plate         String?
+  residentLabel String?
+  expectedAt    DateTime?
+  checkInAt     DateTime?
+  checkOutAt    DateTime?
+  status        String   @default("PENDING") // PENDING | INSIDE | CHECKED_OUT | DENIED
+  notes         String?
+  createdBy     String?
+  createdAt     DateTime @default(now())
+
+  @@index([condominiumId])
+  @@index([status])
+}
+
+model Vehicle {
+  id             String   @id @default(cuid())
+  condominiumId  String
+  condominium    Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  plate          String
+  brand          String?
+  model          String?
+  color          String?
+  type           String   @default("CAR") // CAR | MOTORCYCLE | TRUCK | BICYCLE
+  ownerName      String?
+  ownerPhone     String?
+  residenceLabel String?
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  @@unique([condominiumId, plate])
+  @@index([condominiumId])
+}
+
+model SecurityAlert {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  severity      String   @default("INFO") // INFO | WARNING | CRITICAL
+  category      String   @default("GENERAL") // GENERAL | INTRUSION | FIRE | MEDICAL | OTHER
+  status        String   @default("OPEN") // OPEN | RESOLVED | ARCHIVED
+  location      String?
+  reportedBy    String?
+  resolvedAt    DateTime?
+  resolvedBy    String?
+  resolution    String?
+  createdAt     DateTime @default(now())
+
+  @@index([condominiumId])
+  @@index([status])
+}
+
+model AccessLogEntry {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  direction     String   // IN | OUT
+  entityName    String
+  entityType    String   @default("VISITOR") // VISITOR | RESIDENT | STAFF | VEHICLE
+  plate         String?
+  notes         String?
+  recordedBy    String?
+  occurredAt    DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  @@index([condominiumId, occurredAt])
+}
+
+model Notification {
+  id            String   @id @default(cuid())
+  userId        String
+  title         String
+  body          String?
+  category      String   @default("GENERAL")
+  link          String?
+  read          Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  @@index([userId, read])
+  @@index([userId, createdAt])
+}
+
+model TeamInvite {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  email         String
+  name          String?
+  role          String   @default("STAFF") // ADMIN | STAFF | VIEWER
+  token         String   @unique
+  status        String   @default("PENDING") // PENDING | ACCEPTED | CANCELLED
+  invitedById   String
+  acceptedAt    DateTime?
+  createdAt     DateTime @default(now())
+
+  @@index([condominiumId])
+  @@index([email])
+}
+
+model ModuleConfig {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  moduleKey     String
+  enabled       Boolean  @default(true)
+  updatedAt     DateTime @updatedAt
+
+  @@unique([condominiumId, moduleKey])
+}
+
+model BillingConfig {
+  id                 String   @id @default(cuid())
+  condominiumId      String   @unique
+  condominium        Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  invoiceDay         Int      @default(1)
+  dueDays            Int      @default(15)
+  lateFeePercent     Float    @default(0)
+  lateFeeFixedUSD    Float    @default(0)
+  graceDays          Int      @default(0)
+  autoGenerate       Boolean  @default(false)
+  updatedAt          DateTime @updatedAt
+}
+
+model Receipt {
+  id              String   @id @default(cuid())
+  condominiumId   String
+  condominium     Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  residenceId     String?
+  userId          String?
+  fileUrl         String
+  fileName        String?
+  fileSize        Int?
+  fileType        String?
+  amountUSD       Float?
+  amountVES       Float?
+  reference       String?
+  payerName       String?
+  payerDoc        String?
+  method          String?
+  ocrRaw          String?
+  ocrStatus       String   @default("PENDING") // PENDING | PROCESSED | FAILED | MANUAL
+  status          String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  reviewedById    String?
+  reviewedAt      DateTime?
+  rejectionReason String?
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  @@index([condominiumId])
+  @@index([status])
+}
+
+model PaymentReference {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  residenceId   String?
+  method        String   // PAGO_MOVIL | TRANSFERENCIA_NAC | ZELLE | EFECTIVO
+  bank          String?
+  accountHolder String
+  accountNumber String
+  documentId    String?
+  phone         String?
+  notes         String?
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  @@index([condominiumId])
+  @@index([residenceId])
 }
