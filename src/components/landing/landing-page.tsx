@@ -27,8 +27,11 @@ export function LandingPage({ onGetStarted, onLogin }: Props) {
       const featuresEl = featuresRef.current;
       if (!featuresEl) return;
       const rect = featuresEl.getBoundingClientRect();
-      const shouldHide = rect.top < 100 && rect.bottom > 100;
-      setNavVisible(!shouldHide);
+      // Navbar visible SOLO en el hero (scrollY < 50 o features aún no entró al viewport)
+      // Una vez que features entra (rect.top <= 80), se oculta para siempre hasta volver arriba
+      const atTop = window.scrollY < 50;
+      const featuresNotReached = rect.top > 80;
+      setNavVisible(atTop || featuresNotReached);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
