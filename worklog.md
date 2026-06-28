@@ -337,3 +337,32 @@ Stage Summary:
 - Todas usan `getUserContext` + `unauthorized`/`noCondominium` + checks de rol admin (`membership?.role !== "ADMIN"`) + validación de pertenencia al condominio.
 - **Lint final: `bun run lint` → EXIT 0, 0 errores, 0 warnings.** Mis 43 archivos API están type-clean (verificado con `tsc --noEmit`). Errores tsc preexistentes en auth/me/onboarding (getServerSession import + `never[]` push) no son de esta tarea.
 - Reporte completo en `/agent-ctx/REBUILD-APIS-api-rebuilder.md`.
+
+---
+Task ID: LANDING-REDESIGN-3
+Agent: main (Z.ai Code)
+Task: Mejorar la interfaz gráfica de 3 secciones de la landing page ("Todo lo que tu condominio necesita", "Del caos al control total", "Confianza que se puede auditar") porque estaban muy vacías, sin dinamismo/interactividad y poco atractivas.
+
+Work Log:
+- Leí worklog.md y el archivo existente src/components/landing/landing-page.tsx (290 líneas con las 3 secciones inline)
+- Verifiqué dev server corriendo sin errores y revisé componentes UI disponibles (shadcn/ui completo)
+- Creé src/components/landing/features-section.tsx: bento grid enriquecido con card grande 2x2 (mock de transacción bimonetaria con animaciones) + 8 cards pequeñas cada una con mini-visual específico animado (MiniReceipt con barra de progreso IA, MiniBCV con contador animado, MiniPaymentMethods con pills, MiniUniqueCode con código mono, MiniVoting con barras animadas, MiniAnnouncement, MiniRoles con avatares circulares, MiniNotifications con badge pulsante). Header con badge animado + pills de categorías. Background con grid de puntos + blobs. CTA final.
+- Creé src/components/landing/how-it-works-section.tsx: header con badge "Onboarding en menos de 3 minutos", comparación Antes/Después (caos vs control), 4 pasos con línea conectora animada (useScroll + useTransform para progreso que se llena al scroll), nodos circulares con iconos en la línea, número gigante de fondo en cada card, mock visual específico por paso (MockRegister con formulario, MockWizard con progress bars, MockInvite con código VEC-7K3M, MockPayments con conciliación 9/12), timestamps por paso, CTA "Comenzar ahora"
+- Creé src/components/landing/stats-section.tsx: header con badge "Transparencia verificable", grid de 6 stats con contadores animados (useCountUp con IntersectionObserver + easing cubic), visualización de hash chain (3 bloques conectados verticalmente con hash parcial sha256, animaciones escalonadas, badge "Audit-ready"), card de quote/testimonial con avatar gradiente, trust badges (Hecho en VE, BCV diaria, etc.), CTA final "Empieza hoy — es gratis"
+- Actualicé landing-page.tsx: reemplacé las 3 secciones inline por los nuevos componentes, eliminé código muerto (keyFeatures array, colorMap, useEffect reveal, imports no usados de 15 iconos lucide)
+- Lint: `bun run lint` → 0 errores, 0 warnings
+- Verificación con Agent Browser + VLM (glm-4.6v):
+  * Features section: bien renderizada, bento equilibrado, mini-visuales claros, nada vacío
+  * How section: línea conectora visible, mocks claros, comparación Antes/Después diferenciada
+  * Stats section: 6 stats con contadores, hash chain "AUDIT-READY" clara, quote bien
+  * Mobile (390px): cards apiladas verticalmente, legible, sin overflow, nada cortado
+  * Navbar: visible en hero, desaparece al entrar a features, no reaparece en how/stats ✓
+
+Stage Summary:
+- 3 componentes nuevos creados: features-section.tsx, how-it-works-section.tsx, stats-section.tsx
+- landing-page.tsx reducido de 290 a ~120 líneas (solo navbar + hero + 3 secciones + footer)
+- Dinamismo añadido: contadores animados (useCountUp), línea conectora con progreso al scroll (useScroll/useTransform), 9 mini-visuales únicos animados, mocks de UI por cada paso, hash chain visual, badges pulsantes, hover effects (scale/tilt/glow), comparación Antes/Después
+- Paleta respetada: emerald primario, amber acento, violet/sky/rose secundarios, NO indigo/blue
+- Responsive verificado mobile (390px) + desktop (1440px)
+- reduced-motion respetado en useCountUp y backgrounds
+- Lint limpio, dev server sin errores de runtime
