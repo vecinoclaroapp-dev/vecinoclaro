@@ -437,3 +437,34 @@ Stage Summary:
 - globals.css: añadidos estilos para ocultar scrollbar del html (viewport principal) en todos los navegadores
 - Los scrollbars internos (.scroll-fine) se preservan para listas largas dentro de cards
 - Scroll de la página funciona normalmente, solo no se ve la barra
+
+---
+Task ID: LANDING-TWEAKS-7
+Agent: main (Z.ai Code)
+Task: El scrollbar/franja blanca del lado derecho seguía visible después del fix anterior (solo se ocultó en html, pero body seguía con overflow-x: visible y elementos del footer desbordaban).
+
+Work Log:
+- Analicé la captura del usuario (61×873px) — era un recorte del borde derecho mostrando verde→blanco
+- Detecté con JS que había 7 elementos desbordando horizontalmente: footer (1513px en viewport 1440px), footer-giant-bg-text (1657px), marquee (3839px), etc.
+- Causa raíz: el fix anterior solo aplicó `scrollbar-width: none` a `html` pero `body` seguía con `overflow-x: visible`, permitiendo que el contenido desbordante del footer creara scroll horizontal
+- globals.css: fix más robusto aplicando a `html, body`:
+  * `scrollbar-width: none` (Firefox) + `-ms-overflow-style: none` (IE/Edge)
+  * `overflow-x: hidden` (prevenir scroll horizontal de elementos desbordantes)
+  * `max-width: 100vw` (ningún elemento excede el viewport)
+  * `::-webkit-scrollbar { width: 0; height: 0; display: none }` para Chrome/Safari
+  * `body { position: relative; width: 100% }`
+- Verificación tras reload:
+  * htmlOverflowX: "hidden" ✓
+  * bodyOverflowX: "hidden" ✓
+  * htmlScrollbarWidth: "none" ✓
+  * bodyScrollbarWidth: "none" ✓
+  * scrollbarVisible: 0 ✓
+  * hasVerticalScrollbar: false ✓
+  * VLM en crop de 80px del borde derecho: "Todo es contenido de la página, sin franja blanca ni scrollbar" ✓
+- Lint: 0 errores
+
+Stage Summary:
+- globals.css: overflow-x: hidden + scrollbar oculto en AMBOS html y body (antes solo html)
+- Fix previene que elementos del footer (giant text, marquee con scale-110) causen scroll horizontal
+- Verificado que el borde derecho está completamente limpio
+- Si el usuario aún lo ve, debe hard-refresh (Ctrl+Shift+R) para limpiar cache del navegador
