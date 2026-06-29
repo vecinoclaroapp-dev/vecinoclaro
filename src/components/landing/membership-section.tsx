@@ -12,7 +12,7 @@ export function MembershipSection({ onGetStarted }: Props) {
   const prefersReduced = useReducedMotion();
 
   return (
-    <section id="membership" className="relative py-24 sm:py-32 px-4 sm:px-6 lg:px-8 bg-background scroll-mt-20 overflow-hidden">
+    <section id="membership" className="relative py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-background scroll-mt-20 overflow-hidden">
       {/* Background */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-emerald-500/5 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none" />
@@ -24,7 +24,7 @@ export function MembershipSection({ onGetStarted }: Props) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+          className="text-center mb-10"
         >
           <motion.span
             initial={{ scale: 0.9, opacity: 0 }}
@@ -44,7 +44,7 @@ export function MembershipSection({ onGetStarted }: Props) {
         </motion.div>
 
         {/* 3B Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-16">
+        <div className="grid md:grid-cols-3 gap-6 mb-10">
           {[
             {
               icon: Heart,

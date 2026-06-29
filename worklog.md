@@ -747,3 +747,26 @@ Stage Summary:
 - membership-section.tsx: NUEVA sección de landing con hero 3B + cards + pricing + diferenciadores
 - auth-screen.tsx: eliminados 3 elementos (Gestión bimonetaria, +120 condominios, 100% local VE), contenido centrado, degradado frontera más visible (w-32 con gradientes amber/emerald)
 - Todos los 4 fixes verificados visualmente con VLM
+
+---
+Task ID: LANDING-COMPACT-14
+Agent: main (Z.ai Code)
+Task: Reducir el espacio excesivo entre las 4 secciones de la landing page (Features, How it works, Stats, Membresía) para que el usuario no tenga que scrollear demasiado.
+
+Work Log:
+- Reduje `py-24 sm:py-32` → `py-16 sm:py-20` en las 4 secciones:
+  * features-section.tsx (línea 418)
+  * how-it-works-section.tsx (línea 229)
+  * stats-section.tsx (línea 263)
+  * membership-section.tsx (línea 15)
+- Padding vertical por sección: 256px → 160px (ahorro 96px × 4 = ~384px menos de scroll total)
+- Reduje márgenes internos `mb-16` → `mb-10` y `mb-14` → `mb-10` en headers de todas las secciones
+- Reduje `mb-12` → `mb-8` en stats-section (2 lugares)
+- Lint: 0 errores
+- Verificación visual: las secciones ahora están más compactas y pegadas, sin demasiado espacio vacío entre apartados
+
+Stage Summary:
+- 4 archivos modificados: features-section, how-it-works-section, stats-section, membership-section
+- Padding vertical reducido 37.5% por sección
+- Márgenes internos reducidos ~30%
+- Scroll total de la landing reducido ~400px (de ~7132px a ~6732px)

@@ -226,7 +226,7 @@ export function HowItWorksSection({ onGetStarted }: Props) {
   const lineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
   return (
-    <section id="how" className="relative py-24 sm:py-32 px-4 sm:px-6 lg:px-8 bg-background scroll-mt-20 overflow-hidden">
+    <section id="how" className="relative py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-background scroll-mt-20 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-emerald-950/[0.02] via-transparent to-amber-950/[0.02] pointer-events-none" />
       <div
@@ -245,7 +245,7 @@ export function HowItWorksSection({ onGetStarted }: Props) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+          className="text-center mb-10"
         >
           <motion.span
             initial={{ scale: 0.9, opacity: 0 }}
@@ -270,7 +270,7 @@ export function HowItWorksSection({ onGetStarted }: Props) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="grid grid-cols-2 gap-3 sm:gap-4 max-w-3xl mx-auto mb-16"
+          className="grid grid-cols-2 gap-3 sm:gap-4 max-w-3xl mx-auto mb-10"
         >
           <div className="rounded-2xl border border-rose-500/20 bg-rose-500/5 p-4 sm:p-5">
             <div className="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 mb-2">Antes · el caos</div>

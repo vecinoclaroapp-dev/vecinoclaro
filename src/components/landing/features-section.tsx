@@ -415,7 +415,7 @@ export function FeaturesSection({ onGetStarted, featuresRef }: Props) {
     <section
       id="features"
       ref={featuresRef}
-      className="relative py-24 sm:py-32 px-4 sm:px-6 lg:px-8 bg-background scroll-mt-20 overflow-hidden"
+      className="relative py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-background scroll-mt-20 overflow-hidden"
     >
       {/* Background decoration */}
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none" />
@@ -436,7 +436,7 @@ export function FeaturesSection({ onGetStarted, featuresRef }: Props) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-10"
         >
           <motion.span
             initial={{ scale: 0.9, opacity: 0 }}
