@@ -582,3 +582,41 @@ Stage Summary:
 - residences-view.tsx: sin "Nueva vivienda" + toggleActive (reactivar/desactivar) + info banner
 - use-api.ts: + useModules hook
 - Todos los 7 problemas reportados están arreglados y verificados
+
+---
+Task ID: AUDITORIA-FASE-12-10
+Agent: main (Z.ai Code) + 3 subagentes en paralelo
+Task: Auditoría profunda y exhaustiva de TODA la app para compilar el backlog completo de la Fase 12. El usuario aclaró que la Fase 12 es para corregir TODOS los bugs de las fases anteriores y los GRANDES problemas de la app.
+
+Work Log:
+- Lancé 3 agentes en paralelo para auditar:
+  * Agente 1: 30 vistas del admin
+  * Agente 2: 63 APIs REST + libs críticas (auth, ledger, bcv, notifications, groq, modules)
+  * Agente 3: 10 componentes del portal residente + hooks + store
+- Cada agente leyó los archivos correspondientes y produjo un reporte exhaustivo con bugs clasificados por severidad (CRÍTICO/ALTO/MEDIO/BAJO)
+- Compilé todos los reportes en /home/z/my-project/FASE-12-BACKLOG.md
+
+Hallazgos clave de la auditoría:
+- **Total de bugs detectados: 326** (49 CRÍTICOS, 71 ALTOS, 157 MEDIOS, 49 BAJOS)
+- **El portal residente es COMPLETAMENTE INALCANZABLE**: ningún componente está cableado en page.tsx. RoleSelectorScreen y ResidentJoinScreen están orfanados. El flujo de join está roto en 5 puntos distintos.
+- **Seguridad CRÍTICA**: 3 APIs sin autenticación ni multi-tenant (/api/residences/[id] PATCH/DELETE, /api/services/[id] PATCH). Cualquiera en internet puede modificar viviendas y cargos.
+- **Hash chain SHA-256 vulnerable**: appendLedgerEntry tiene race condition (read-then-write no atómico). 4 APIs no transaccionales con el ledger.
+- **Funcionalidad núcleo rota**: 
+  * Aprobar comprobantes no actualiza saldos (no crea Payment ni asiento)
+  * Generar facturas no crea asientos DEBIT
+  * Crear gastos no crea asientos contables
+  * late-fees no idempotente (crea moras duplicadas)
+  * Residence.joinCode nunca se genera (join siempre falla)
+- **Esalada de privilegios**: /api/auth/register y Google OAuth crean users con role: "ADMIN" por defecto
+- **Autorización**: ~20 APIs POST/PATCH administrativas no verifican rol ADMIN
+- **Bimonetario roto**: Fund sin bcvRateId, balanceVES independiente de balanceUSD, asientos sin condominiumId invisibles
+- **3 vistas con bugs CRÍTICOS**: payment-references-view (dropdown bancos vacío), polls-view (botón Nueva votación sin onClick), alerts-view (endpoint PATCH inexistente)
+- **Validación de input ausente universalmente**: ninguna API usa Zod, se confía en el cliente
+- **Módulos no se propagan**: desactivar un módulo solo lo oculta del sidebar, las APIs siguen funcionando
+- **Notificaciones faltantes en 8 flujos críticos**: pago confirmado, comprobante subido/aprobado, votación creada, factura generada, solicitud cambia estado, mensaje nuevo, reserva pendiente
+
+Stage Summary:
+- Archivo creado: /home/z/my-project/FASE-12-BACKLOG.md (326 bugs documentados con severidad, descripción y línea cuando aplica)
+- Backlog organizado en 6 sprints: Seguridad crítica → Funcionalidad núcleo → Portal residente → Bugs altos → Bugs medios → Bugs bajos
+- No se escribió código de fix en esta tarea, solo auditoría y documentación
+- La Fase 12 es significativamente más grande de lo que se pensaba: no son 40 items opcionales, son 326 bugs reales (49 críticos que bloquean release)
