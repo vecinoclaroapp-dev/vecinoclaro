@@ -11,14 +11,11 @@ import { googleOAuthEnabled } from "@/lib/oauth-config";
 import { toast } from "sonner";
 import { signIn } from "next-auth/react";
 import {
-  Building2,
   Wallet,
   ShieldCheck,
   Zap,
   TrendingUp,
-  Users,
   ArrowRight,
-  CheckCircle2,
   Lock,
   Mail,
   User,
@@ -73,40 +70,35 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Lado izquierdo: Brand + valor */}
-      <div className="relative hidden lg:flex flex-col justify-between p-12 bg-gradient-to-br from-emerald-700 via-emerald-800 to-emerald-900 text-white overflow-hidden">
+      <div className="relative hidden lg:flex flex-col items-center justify-center p-12 bg-gradient-to-br from-emerald-700 via-emerald-800 to-emerald-900 text-white overflow-hidden">
         <div className="absolute inset-0 bg-grid opacity-20" />
         <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-amber-400/20 blur-3xl" />
         <div className="absolute -left-32 -bottom-32 h-96 w-96 rounded-full bg-emerald-400/20 blur-3xl" />
 
-        {/* Brand con logo real */}
-        <div className="relative z-10">
-          <div className="flex items-center gap-3">
+        {/* Brand con logo real — centrado */}
+        <div className="relative z-10 text-center">
+          <div className="flex items-center justify-center gap-3 mb-8">
             <img
               src="/logo-vecinoclaro.jpg"
               alt="VecinoClaro"
-              className="h-12 w-12 rounded-xl object-cover ring-1 ring-white/20"
+              className="h-14 w-14 rounded-xl object-cover ring-1 ring-white/20"
             />
-            <div>
-              <p className="font-bold text-lg leading-tight">VecinoClaro</p>
+            <div className="text-left">
+              <p className="font-bold text-xl leading-tight">VecinoClaro</p>
               <p className="text-xs text-amber-300 leading-tight tracking-wide font-semibold">
                 Cuentas Claras, Vecinos Claros
               </p>
             </div>
           </div>
-        </div>
 
-        <div className="relative z-10 space-y-6">
-          <div>
-            <p className="text-amber-300 font-semibold text-sm mb-3 tracking-wide uppercase">Gestión bimonetaria</p>
-            <h1 className="text-4xl xl:text-5xl font-bold leading-tight mb-4">
-              Administra tu condominio en <span className="text-amber-300">dólares</span> y <span className="text-amber-300">bolívares</span>, sin caos.
-            </h1>
-            <p className="text-emerald-100 text-lg leading-relaxed max-w-md">
-              La plataforma hecha para la realidad venezolana. Tasa BCV automática, pago móvil, Zelle y libro contable inmutable.
-            </p>
-          </div>
+          <h1 className="text-4xl xl:text-5xl font-bold leading-tight mb-4">
+            Administra tu condominio en <span className="text-amber-300">dólares</span> y <span className="text-amber-300">bolívares</span>, sin caos.
+          </h1>
+          <p className="text-emerald-100 text-lg leading-relaxed max-w-md mx-auto">
+            La plataforma hecha para la realidad venezolana. Tasa BCV automática, pago móvil, Zelle y libro contable inmutable.
+          </p>
 
-          <div className="grid grid-cols-2 gap-3 max-w-md">
+          <div className="grid grid-cols-2 gap-3 max-w-md mx-auto mt-8">
             {[
               { icon: Wallet, label: "Contabilidad USD/VES" },
               { icon: TrendingUp, label: "Tasa BCV en tiempo real" },
@@ -123,19 +115,14 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
           </div>
         </div>
 
-        <div className="relative z-10 flex items-center gap-6 text-sm text-emerald-200">
-          <div className="flex items-center gap-2"><Users className="h-4 w-4" /> +120 condominios</div>
-          <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /> 100% local VE</div>
-        </div>
-
-        {/* Degradado decorativo en el borde derecho (frontera verde→blanco) */}
-        <div className="absolute top-0 right-0 h-full w-16 bg-gradient-to-r from-transparent via-white/10 to-white/30 pointer-events-none" />
+        {/* Degradado decorativo en el borde derecho (frontera verde→blanco) — más visible */}
+        <div className="absolute top-0 right-0 h-full w-32 bg-gradient-to-r from-transparent via-emerald-400/20 to-amber-400/30 pointer-events-none" />
       </div>
 
       {/* Lado derecho: Formulario */}
       <div className="flex items-center justify-center p-6 sm:p-12 bg-background relative">
-        {/* Degradado decorativo en el borde izquierdo (frontera blanco←verde) */}
-        <div className="absolute top-0 left-0 h-full w-16 bg-gradient-to-l from-transparent via-emerald-50/40 to-emerald-100/60 dark:via-emerald-950/20 dark:to-emerald-900/30 pointer-events-none lg:block hidden" />
+        {/* Degradado decorativo en el borde izquierdo (frontera blanco←verde) — más visible */}
+        <div className="absolute top-0 left-0 h-full w-32 bg-gradient-to-l from-transparent via-emerald-100/60 to-emerald-300/40 dark:via-emerald-950/40 dark:to-emerald-800/30 pointer-events-none lg:block hidden" />
 
         <div className="w-full max-w-md relative z-10">
           {/* Botón volver a landing */}

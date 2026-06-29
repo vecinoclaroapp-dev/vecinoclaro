@@ -128,11 +128,8 @@ export function Sidebar() {
   })).filter((section) => section.items.length > 0);
 
   const handleLogout = () => {
-    toast.promise(logout.mutateAsync(), {
-      loading: "Cerrando sesión...",
-      success: "Sesión cerrada",
-      error: "Error",
-    });
+    logout.mutate(undefined);
+    toast.success("Sesión cerrada");
   };
 
   return (

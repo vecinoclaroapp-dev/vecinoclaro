@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FeaturesSection } from "@/components/landing/features-section";
 import { HowItWorksSection } from "@/components/landing/how-it-works-section";
 import { StatsSection } from "@/components/landing/stats-section";
+import { MembershipSection } from "@/components/landing/membership-section";
 
 type Props = {
   onGetStarted: () => void;
@@ -53,10 +54,11 @@ export function LandingPage({ onGetStarted, onLogin }: Props) {
                 <img src="/logo-vecinoclaro.jpg" alt="VecinoClaro" className="h-8 w-8 rounded-lg object-cover" />
                 <span className="font-bold text-sm text-white tracking-tight">VecinoClaro</span>
               </div>
-              <div className="hidden md:flex items-center gap-6 text-sm text-emerald-100/80 mx-auto">
+              <div className="hidden md:flex items-center gap-5 text-sm text-emerald-100/80 mx-auto">
                 <a href="#features" className="hover:text-white transition-colors">Funciones</a>
                 <a href="#how" className="hover:text-white transition-colors">Cómo funciona</a>
                 <a href="#stats" className="hover:text-white transition-colors">Confianza</a>
+                <a href="#membership" className="hover:text-white transition-colors text-amber-300 font-semibold">Membresía</a>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 <Button variant="ghost" size="sm" onClick={onLogin} className="text-emerald-100 hover:text-white hover:bg-white/10 text-sm">Iniciar sesión</Button>
@@ -72,6 +74,7 @@ export function LandingPage({ onGetStarted, onLogin }: Props) {
                   <a href="#features" onClick={() => setMobileMenuOpen(false)} className="block py-2.5 text-sm text-emerald-100 hover:text-white">Funciones</a>
                   <a href="#how" onClick={() => setMobileMenuOpen(false)} className="block py-2.5 text-sm text-emerald-100 hover:text-white">Cómo funciona</a>
                   <a href="#stats" onClick={() => setMobileMenuOpen(false)} className="block py-2.5 text-sm text-emerald-100 hover:text-white">Confianza</a>
+                  <a href="#membership" onClick={() => setMobileMenuOpen(false)} className="block py-2.5 text-sm text-amber-300 font-semibold hover:text-amber-200">Membresía</a>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -95,6 +98,9 @@ export function LandingPage({ onGetStarted, onLogin }: Props) {
 
       {/* STATS — contadores animados + hash chain visual + quote */}
       <StatsSection onGetStarted={onGetStarted} />
+
+      {/* MEMBERSHIP — 3B (Bueno, Bonito, Barato) + pricing + diferenciadores */}
+      <MembershipSection onGetStarted={onGetStarted} />
 
       {/* CINEMATIC FOOTER */}
       <CinematicFooter onGetStarted={onGetStarted} onLogin={onLogin} />

@@ -699,3 +699,51 @@ Stage Summary:
 - Auto-generación: la membresía del mes se crea automáticamente al visitar la vista
 - 3B (Bueno, Bonito, Barato) explicado visualmente
 - Posicionamiento: "El mejor servicio te lo da TU VecinoClaro, siendo el mejor de Venezuela"
+
+---
+Task ID: FIX-LOGOUT-AUTH-MEMBERSHIP-LANDING-13
+Agent: main (Z.ai Code)
+Task: 4 fixes solicitados: (1) logout tarda demasiado/se queda pegado, (2) añadir "Membresía" al navbar de la landing junto a Funciones/Cómo funciona/Confianza, (3) quitar "Gestión bimonetaria", "+120 condominios", "100% local VE" con iconos del auth-screen, (4) centrar todo simétrico + degradado visible en frontera verde/blanco del auth-screen.
+
+Work Log:
+- FIX 1 — Logout lento (src/hooks/use-auth.ts):
+  * Causa: useLogout usaba toast.promise(logout.mutateAsync()) que esperaba a que signOut terminara + router.refresh() hacía round-trip lento
+  * Solución: mutación ahora limpia qc.clear() inmediatamente, dispara signOut fire-and-forget, y en onSuccess hace window.location.href = "/" (recarga completa instantánea)
+  * sidebar.tsx: cambié handleLogout de toast.promise(logout.mutateAsync) a logout.mutate(undefined) + toast.success inmediato
+  * Resultado: el logout ahora fuerza recarga completa y muestra landing inmediatamente
+
+- FIX 2 — Membresía en navbar de landing (src/components/landing/landing-page.tsx):
+  * Añadí enlace "Membresía" en el navbar desktop junto a Funciones/Cómo funciona/Confianza (color amber-300 + font-semibold para destacarlo)
+  * Añadí al menú móvil también
+  * Creé src/components/landing/membership-section.tsx con:
+    - Hero "Bueno, Bonito y Barato" con badge 3B
+    - 3 cards explicando cada B (Bueno: 30+ módulos/IA/SHA-256, Bonito: shadcn/PWA/animaciones, Barato: $2/apto/mes)
+    - Pricing destacado en card oscura verde con gradiente amber + tabla de ejemplos (8/12/24/50 viviendas)
+    - Diferenciadores: 6 badges (SHA-256, IA Groq, Bimonetario, 100% local, 30+ módulos, PWA)
+  * Añadí <MembershipSection /> al render entre StatsSection y CinematicFooter
+
+- FIX 3 — Auth-screen limpio (src/components/auth/auth-screen.tsx):
+  * ELIMINADO texto "Gestión bimonetaria" (línea 100 anterior)
+  * ELIMINADOS "+120 condominios" y "100% local VE" con sus iconos Users/CheckCircle2 (líneas 126-129 anteriores)
+  * Limpié imports: removí Users, CheckCircle2, Building2 (ya no se usan)
+  * Cambié layout del panel verde de flex-col justify-between (top/bottom) a flex-col items-center justify-center (centrado vertical Y horizontal)
+  * El logo ahora está centrado con text-center en el contenedor padre
+
+- FIX 4 — Degradado visible en frontera (src/components/auth/auth-screen.tsx):
+  * Panel verde: cambié w-16 → w-32 con gradient de transparent → emerald-400/20 → amber-400/30 (más visible)
+  * Panel blanco: cambié w-16 → w-32 con gradient de transparent → emerald-100/60 → emerald-300/40 (más visible en light mode) + dark:via-emerald-950/40 dark:to-emerald-800/30 (dark mode)
+  * El degradado ahora es claramente visible en la frontera entre los dos paneles (antes era apenas perceptible)
+
+- Lint: 0 errores
+- Verificación con Agent Browser + VLM:
+  * Navbar: "4 enlaces (Funciones, Cómo funciona, Confianza, Membresía en amarillo) centrados y simétricos" ✓
+  * Auth-screen: "Gestión bimonetaria eliminado, +120 condominios y 100% local VE eliminados, contenido centrado, degradado visible en frontera, logo centrado" ✓ (5/5 verificaciones pasadas)
+  * Logout: confirmado que signOut se ejecuta + window.location.href = "/" recarga a landing ✓
+
+Stage Summary:
+- use-auth.ts: useLogout optimizado con fire-and-forget + window.location.href
+- sidebar.tsx: handleLogout sin toast.promise
+- landing-page.tsx: navbar con 4 enlaces (Funciones/Cómo funciona/Confianza/Membresía) + menú móvil actualizado + MembershipSection renderizada
+- membership-section.tsx: NUEVA sección de landing con hero 3B + cards + pricing + diferenciadores
+- auth-screen.tsx: eliminados 3 elementos (Gestión bimonetaria, +120 condominios, 100% local VE), contenido centrado, degradado frontera más visible (w-32 con gradientes amber/emerald)
+- Todos los 4 fixes verificados visualmente con VLM

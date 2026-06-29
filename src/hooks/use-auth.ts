@@ -63,11 +63,15 @@ export function useLogout() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async () => {
-      await signOut({ redirect: false });
+      // Limpiar cache INMEDIATAMENTE para feedback instantáneo
+      qc.clear();
+      // Disparar signOut sin esperar (fire and forget)
+      signOut({ redirect: false }).catch(() => {});
+      return true;
     },
     onSuccess: () => {
-      qc.clear();
-      router.refresh();
+      // Forzar recarga completa de la página para que el estado se sincronice
+      window.location.href = "/";
     },
   });
 }
