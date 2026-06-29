@@ -9,9 +9,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { DashboardView } from "@/components/dashboard/dashboard-view";
 import { ResidencesView } from "@/components/residences/residences-view";
-import { PaymentsView } from "@/components/payments/payments-view";
-import { ReceiptsView } from "@/components/payments/receipts-view";
-import { PaymentReferencesView } from "@/components/admin/payment-references-view";
+import { UnifiedPaymentsView } from "@/components/payments/unified-payments-view";
 import { LedgerView } from "@/components/ledger/ledger-view";
 import { ServicesView } from "@/components/services/services-view";
 import { InvoicesView } from "@/components/invoices/invoices-view";
@@ -98,9 +96,9 @@ export default function Home() {
           <div className="mx-auto max-w-7xl">
             {view === "dashboard" && <DashboardView />}
             {view === "residences" && <ResidencesView />}
-            {view === "payments" && <PaymentsView />}
-            {view === "receipts" && <ReceiptsView />}
-            {view === "payment-references" && <PaymentReferencesView />}
+            {view === "payments" && <UnifiedPaymentsView />}
+            {view === "receipts" && <UnifiedPaymentsView />}
+            {view === "payment-references" && <UnifiedPaymentsView />}
             {view === "ledger" && <LedgerView />}
             {view === "services" && <ServicesView />}
             {view === "invoices" && <InvoicesView />}

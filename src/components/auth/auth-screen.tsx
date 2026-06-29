@@ -78,19 +78,24 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
         <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-amber-400/20 blur-3xl" />
         <div className="absolute -left-32 -bottom-32 h-96 w-96 rounded-full bg-emerald-400/20 blur-3xl" />
 
+        {/* Brand con logo real */}
         <div className="relative z-10">
           <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center">
-              <Building2 className="h-6 w-6" />
-            </div>
+            <img
+              src="/logo-vecinoclaro.jpg"
+              alt="VecinoClaro"
+              className="h-12 w-12 rounded-xl object-cover ring-1 ring-white/20"
+            />
             <div>
               <p className="font-bold text-lg leading-tight">VecinoClaro</p>
-              <p className="text-xs text-amber-300 leading-tight tracking-wider font-semibold">VENEZUELA</p>
+              <p className="text-xs text-amber-300 leading-tight tracking-wide font-semibold">
+                Cuentas Claras, Vecinos Claros
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="relative z-10 space-y-8">
+        <div className="relative z-10 space-y-6">
           <div>
             <p className="text-amber-300 font-semibold text-sm mb-3 tracking-wide uppercase">Gestión bimonetaria</p>
             <h1 className="text-4xl xl:text-5xl font-bold leading-tight mb-4">
@@ -101,7 +106,7 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 max-w-md">
+          <div className="grid grid-cols-2 gap-3 max-w-md">
             {[
               { icon: Wallet, label: "Contabilidad USD/VES" },
               { icon: TrendingUp, label: "Tasa BCV en tiempo real" },
@@ -122,33 +127,41 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
           <div className="flex items-center gap-2"><Users className="h-4 w-4" /> +120 condominios</div>
           <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /> 100% local VE</div>
         </div>
+
+        {/* Degradado decorativo en el borde derecho (frontera verde→blanco) */}
+        <div className="absolute top-0 right-0 h-full w-16 bg-gradient-to-r from-transparent via-white/10 to-white/30 pointer-events-none" />
       </div>
 
       {/* Lado derecho: Formulario */}
-      <div className="flex items-center justify-center p-6 sm:p-12 bg-background">
-        <div className="w-full max-w-md">
+      <div className="flex items-center justify-center p-6 sm:p-12 bg-background relative">
+        {/* Degradado decorativo en el borde izquierdo (frontera blanco←verde) */}
+        <div className="absolute top-0 left-0 h-full w-16 bg-gradient-to-l from-transparent via-emerald-50/40 to-emerald-100/60 dark:via-emerald-950/20 dark:to-emerald-900/30 pointer-events-none lg:block hidden" />
+
+        <div className="w-full max-w-md relative z-10">
           {/* Botón volver a landing */}
           {onBack && (
             <button
               onClick={onBack}
-              className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5 mb-6"
+              className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5 mb-5"
             >
               <ArrowLeft className="h-3.5 w-3.5" /> Volver al inicio
             </button>
           )}
 
-          {/* Mobile brand */}
-          <div className="lg:hidden flex items-center gap-3 mb-8 justify-center">
-            <div className="h-11 w-11 rounded-xl bg-emerald-600 flex items-center justify-center">
-              <Building2 className="h-6 w-6 text-white" />
-            </div>
+          {/* Mobile brand con logo */}
+          <div className="lg:hidden flex items-center gap-3 mb-6 justify-center">
+            <img
+              src="/logo-vecinoclaro.jpg"
+              alt="VecinoClaro"
+              className="h-11 w-11 rounded-xl object-cover ring-1 ring-border"
+            />
             <div>
               <p className="font-bold text-lg leading-tight">VecinoClaro</p>
-              <p className="text-xs text-muted-foreground leading-tight tracking-wider">VENEZUELA</p>
+              <p className="text-xs text-muted-foreground leading-tight tracking-wide">Cuentas Claras, Vecinos Claros</p>
             </div>
           </div>
 
-          <div className="mb-8">
+          <div className="mb-6">
             <h2 className="text-2xl font-bold">
               {mode === "login" ? "Inicia sesión" : "Crea tu cuenta"}
             </h2>
@@ -163,7 +176,7 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
             <>
               <Button
                 variant="outline"
-                className="w-full mb-4 gap-2 h-11"
+                className="w-full mb-3 gap-2 h-11"
                 onClick={googleSignIn}
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24">
@@ -174,14 +187,14 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
                 </svg>
                 Continuar con Google
               </Button>
-              <div className="relative mb-4">
+              <div className="relative mb-3">
                 <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
                 <div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-muted-foreground">o con tu correo</span></div>
               </div>
             </>
           )}
 
-          <form onSubmit={submit} className="space-y-5">
+          <form onSubmit={submit} className="space-y-4">
             {mode === "register" && (
               <div className="space-y-1.5">
                 <Label htmlFor="name">Nombre completo</Label>
@@ -251,7 +264,7 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
             </Button>
           </form>
 
-          <div className="text-center mt-6 text-sm text-muted-foreground">
+          <div className="text-center mt-4 text-sm text-muted-foreground">
             {mode === "login" ? (
               <>
                 ¿No tienes cuenta?{" "}

@@ -377,3 +377,16 @@ export function useCreateBudget() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["budget"] }),
   });
 }
+
+// ---------------- Modules ----------------
+export function useModules() {
+  return useQuery({
+    queryKey: ["modules"],
+    queryFn: async () => {
+      const r = await fetch("/api/modules");
+      if (!r.ok) return {};
+      return r.json() as Promise<Record<string, boolean>>;
+    },
+    staleTime: 30 * 1000,
+  });
+}

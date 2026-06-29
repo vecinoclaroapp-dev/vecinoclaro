@@ -511,3 +511,74 @@ Stage Summary:
 - page.tsx: 11 conditional renders → 30, + prop initialMode para modo registro
 - auth-screen.tsx: + prop initialMode
 - Login + registro + dashboard completo verificados end-to-end
+
+---
+Task ID: FIX-AUDITORIA-9
+Agent: main (Z.ai Code)
+Task: Auditoría profunda solicitada por el usuario. Se reportaron 7 problemas: (1) diseño del login perdió elementos, (2) frontera verde/blanco muy plana, (3) apartados muy separados, (4) módulos no se ocultan al desactivar, (5) BCV siempre dice "Desactualizado", (6) viviendas no tiene reactivar + botón nueva vivienda no debe existir, (7) Pagos/Comprobantes/Cuentas deben estar unificados.
+
+Work Log:
+- AUDITORÍA: leí auth-screen.tsx, sidebar.tsx, topbar.tsx, residences-view.tsx, dashboard-view.tsx, unified-payments-view.tsx, use-api.ts, modules API, residences API. Confirmé que UnifiedPaymentsView EXISTÍA pero no se usaba, y que el sidebar tenía 30 vistas pero sin filtrado por módulos.
+
+- FIX 1 — AuthScreen (auth-screen.tsx):
+  * Reemplacé icono Building2 por <img src="/logo-vecinoclaro.jpg"> (logo real)
+  * Cambié subtítulo "VENEZUELA" → "Cuentas Claras, Vecinos Claros"
+  * Verifiqué que +120 condominios, 100% local VE, Gestión bimonetaria YA estaban (líneas 95, 122, 123)
+  * Añadí degradado decorativo en frontera verde→blanco (w-16 gradient blanco/30 en lado verde)
+  * Añadí degradado decorativo en frontera blanco←verde (w-16 gradient emerald-100/60 en lado blanco)
+  * Reduje espaciado: space-y-8→space-y-6, mb-8→mb-6, space-y-5→space-y-4, mt-6→mt-4, mb-4→mb-3
+
+- FIX 2 — Sidebar (sidebar.tsx):
+  * Reemplacé icono Building2 por <img src="/logo-vecinoclaro.jpg"> en el brand
+  * Cambié subtítulo "VE · Bimonetario" → "Cuentas Claras, Vecinos Claros"
+  * Removí "receipts" y "payment-references" de NAV_SECTIONS (van unificados en Pagos con 3 tabs)
+  * Añadí campo `module?` a NavItem para filtrar por módulo
+  * Añadí useModules() hook + filtrado: items con module desactivado se ocultan
+  * Desactivé "Votaciones" en browser → desapareció del sidebar ✓, reactivado → reapareció ✓
+
+- FIX 3 — Topbar (topbar.tsx):
+  * Extendí VIEW_TITLES de 11 a 30 entradas (todas las vistas)
+  * Cambié badge "Hoy" → "Actualizado" (verde) cuando bcv.isToday
+  * "Desactualizado" (ámbar) se mantiene cuando !bcv.isToday (>24h)
+
+- FIX 4 — Pagos unificado (page.tsx):
+  * Cambié view==="payments" → <UnifiedPaymentsView /> (con 3 tabs: Pagos, Comprobantes, Cuentas de pago)
+  * receipts y payment-references también renderizan UnifiedPaymentsView (acceso via tabs)
+  * Removí imports no usados (PaymentsView, ReceiptsView, PaymentReferencesView)
+
+- FIX 5 — Viviendas (residences-view.tsx):
+  * ELIMINÉ botón "Nueva vivienda" + DialogTrigger + openCreate
+  * Añadí info banner azul: "Las viviendas se crean automáticamente cuando un residente usa tu código de invitación"
+  * Añadí función toggleActive() que cambia active: true/false via PATCH /api/residences/[id]
+  * Botón "Reactivar" (icon Power, verde) aparece para viviendas inactivas
+  * Botón "Desactivar" (icon PowerOff, rojo) aparece para viviendas activas
+  * Añadí botón toggle "Inactivas (N)" para mostrar/ocultar viviendas desactivadas
+  * Empty state cambiado: "Comparte tu código de invitación para que los residentes se unan"
+  * Eliminé useCreateResidence, useDeleteResidence, AlertDialog de confirmación
+
+- FIX 6 — useModules hook (use-api.ts):
+  * Añadí useModules() que hace GET /api/modules y devuelve Record<string,boolean>
+  * staleTime: 30s para refresco rápido tras toggle
+
+- FIX 7 — Módulos respetan config:
+  * El sidebar ahora filtra items: si modules[item.module] === false, no se muestra
+  * Funciona para admin, moderadores y residentes (todos usan el mismo sidebar filtrado)
+  * Verificado: desactivar Votaciones → desaparece del sidebar; reactivar → reaparece
+
+- Lint: 0 errores, 0 warnings
+- Verificación con Agent Browser + VLM:
+  * Login: logo real ✓, "Cuentas Claras, Vecinos Claros" ✓, +120 condominios ✓, 100% local VE ✓, Gestión bimonetaria ✓, degradado frontera ✓, espaciado correcto ✓
+  * Sidebar: logo real ✓, "Cuentas Claras, Vecinos Claros" ✓ (no "VE · Bimonetario")
+  * Pagos: 3 tabs unificados (Pagos, Comprobantes, Cuentas de pago) ✓
+  * Viviendas: sin botón "Nueva vivienda" ✓, info banner visible ✓
+  * Módulos: desactivar Votaciones → desaparece del sidebar ✓, reactivar → reaparece ✓
+  * BCV: muestra "Actualizado" (verde) o "Desactualizado" (ámbar) según isToday
+
+Stage Summary:
+- auth-screen.tsx: logo real + eslogan + degradado frontera + menos espaciado
+- sidebar.tsx: logo real + eslogan + filtrado por módulos activos + receipts/payment-references removidos (unificados)
+- topbar.tsx: 30 VIEW_TITLES + badge "Actualizado" verde
+- page.tsx: UnifiedPaymentsView para payments/receipts/payment-references
+- residences-view.tsx: sin "Nueva vivienda" + toggleActive (reactivar/desactivar) + info banner
+- use-api.ts: + useModules hook
+- Todos los 7 problemas reportados están arreglados y verificados

@@ -35,14 +35,12 @@ import {
   KeyRound,
   ShieldCheck,
   Blocks,
-  ScanLine,
-  Landmark,
 } from "lucide-react";
-import { useCondominium } from "@/hooks/use-api";
+import { useCondominium, useModules } from "@/hooks/use-api";
 import { useMe, useLogout } from "@/hooks/use-auth";
 import { toast } from "sonner";
 
-type NavItem = { view: View; label: string; icon: React.ComponentType<{ className?: string }>; description: string };
+type NavItem = { view: View; label: string; icon: React.ComponentType<{ className?: string }>; description: string; module?: string };
 type NavSection = { title: string; items: NavItem[] };
 
 const NAV_SECTIONS: NavSection[] = [
@@ -58,9 +56,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { view: "residences", label: "Viviendas", icon: Home, description: "Propiedades y saldos" },
       { view: "invoices", label: "Facturas", icon: FileText, description: "Mantenimiento mensual" },
-      { view: "payments", label: "Pagos", icon: CreditCard, description: "Registro y consulta" },
-      { view: "receipts", label: "Comprobantes IA", icon: ScanLine, description: "OCR y verificación" },
-      { view: "payment-references", label: "Cuentas de pago", icon: Landmark, description: "Bancos y referencias" },
+      { view: "payments", label: "Pagos", icon: CreditCard, description: "Pagos · Comprobantes · Cuentas" },
       { view: "ledger", label: "Libro Contable", icon: BookOpen, description: "Historial inmutable" },
       { view: "expenses", label: "Gastos y Proveedores", icon: Receipt, description: "Egresos del condominio" },
       { view: "services", label: "Servicios Críticos", icon: Zap, description: "Cargos extraordinarios" },
@@ -71,30 +67,30 @@ const NAV_SECTIONS: NavSection[] = [
   {
     title: "Comunicación",
     items: [
-      { view: "announcements", label: "Avisos y Morosos", icon: Megaphone, description: "Cartelera digital" },
-      { view: "polls", label: "Votaciones", icon: Vote, description: "Por indiviso (Ley PH)" },
-      { view: "requests", label: "Solicitudes", icon: LifeBuoy, description: "Help-desk de residentes" },
-      { view: "messages", label: "Mensajes", icon: MessageSquare, description: "Chat interno" },
-      { view: "calendar", label: "Calendario", icon: CalendarDays, description: "Eventos y asambleas" },
+      { view: "announcements", label: "Avisos y Morosos", icon: Megaphone, description: "Cartelera digital", module: "announcements" },
+      { view: "polls", label: "Votaciones", icon: Vote, description: "Por indiviso (Ley PH)", module: "polls" },
+      { view: "requests", label: "Solicitudes", icon: LifeBuoy, description: "Help-desk de residentes", module: "requests" },
+      { view: "messages", label: "Mensajes", icon: MessageSquare, description: "Chat interno", module: "messages" },
+      { view: "calendar", label: "Calendario", icon: CalendarDays, description: "Eventos y asambleas", module: "calendar" },
     ],
   },
   {
     title: "Comunidad",
     items: [
-      { view: "facilities", label: "Áreas comunes", icon: Building2, description: "Reservas" },
-      { view: "directory", label: "Directorio", icon: Users, description: "Vecinos y contactos" },
-      { view: "marketplace", label: "Marketplace", icon: ShoppingBag, description: "Compra-venta" },
-      { view: "documents", label: "Documentos", icon: FolderOpen, description: "Actas y manuales" },
-      { view: "works", label: "Obras", icon: HardHat, description: "Proyectos y mantenimiento" },
+      { view: "facilities", label: "Áreas comunes", icon: Building2, description: "Reservas", module: "facilities" },
+      { view: "directory", label: "Directorio", icon: Users, description: "Vecinos y contactos", module: "directory" },
+      { view: "marketplace", label: "Marketplace", icon: ShoppingBag, description: "Compra-venta", module: "marketplace" },
+      { view: "documents", label: "Documentos", icon: FolderOpen, description: "Actas y manuales", module: "documents" },
+      { view: "works", label: "Obras", icon: HardHat, description: "Proyectos y mantenimiento", module: "works" },
     ],
   },
   {
     title: "Seguridad",
     items: [
-      { view: "visitors", label: "Visitantes", icon: UserCheck, description: "Check-in/out" },
-      { view: "vehicles", label: "Vehículos", icon: Car, description: "Placas y permisos" },
-      { view: "alerts", label: "Alertas", icon: Bell, description: "Incidencias" },
-      { view: "access-log", label: "Bitácora", icon: ScrollText, description: "Registro de accesos" },
+      { view: "visitors", label: "Visitantes", icon: UserCheck, description: "Check-in/out", module: "security" },
+      { view: "vehicles", label: "Vehículos", icon: Car, description: "Placas y permisos", module: "security" },
+      { view: "alerts", label: "Alertas", icon: Bell, description: "Incidencias", module: "security" },
+      { view: "access-log", label: "Bitácora", icon: ScrollText, description: "Registro de accesos", module: "security" },
     ],
   },
   {
@@ -112,12 +108,22 @@ export function Sidebar() {
   const { view, setView, sidebarOpen, setSidebarOpen } = useAppStore();
   const { data: condo } = useCondominium();
   const { data: me } = useMe();
+  const { data: modules } = useModules();
   const logout = useLogout();
 
   const user = me?.user;
   const initials = user?.name
     ? user.name.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase()
     : user?.email?.[0]?.toUpperCase() ?? "?";
+
+  // Filtrar secciones/items según módulos activos
+  const filteredSections = NAV_SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.filter((item) => {
+      if (!item.module) return true;
+      return modules?.[item.module] !== false;
+    }),
+  })).filter((section) => section.items.length > 0);
 
   const handleLogout = () => {
     toast.promise(logout.mutateAsync(), {
@@ -145,15 +151,19 @@ export function Sidebar() {
           sidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        {/* Brand */}
+        {/* Brand con logo real + eslogan */}
         <div className="flex items-center justify-between gap-3 px-5 h-16 border-b border-sidebar-border">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-sm shrink-0">
-              <Building2 className="h-5 w-5 text-white" />
-            </div>
+            <img
+              src="/logo-vecinoclaro.jpg"
+              alt="VecinoClaro"
+              className="h-10 w-10 rounded-xl object-cover shrink-0 ring-1 ring-sidebar-border"
+            />
             <div className="min-w-0">
               <p className="font-bold text-sm leading-tight truncate">VecinoClaro</p>
-              <p className="text-[11px] text-muted-foreground leading-tight font-medium tracking-wide">VE · Bimonetario</p>
+              <p className="text-[10px] text-muted-foreground leading-tight font-medium tracking-wide truncate">
+                Cuentas Claras, Vecinos Claros
+              </p>
             </div>
           </div>
           <Button
@@ -178,7 +188,7 @@ export function Sidebar() {
 
         {/* Navegación */}
         <nav className="flex-1 overflow-y-auto scroll-fine px-3 py-3 space-y-4">
-          {NAV_SECTIONS.map((section) => (
+          {filteredSections.map((section) => (
             <div key={section.title} className="space-y-1">
               <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
                 {section.title}

@@ -17,7 +17,9 @@ import { cn } from "@/lib/utils";
 const VIEW_TITLES: Record<View, { title: string; subtitle: string }> = {
   dashboard: { title: "Panel General", subtitle: "Resumen bimonetario del condominio" },
   residences: { title: "Viviendas", subtitle: "Propiedades, propietarios y saldos" },
-  payments: { title: "Pagos", subtitle: "Registro y consulta de pagos recibidos" },
+  payments: { title: "Pagos", subtitle: "Registro, comprobantes y cuentas bancarias" },
+  receipts: { title: "Pagos", subtitle: "Registro, comprobantes y cuentas bancarias" },
+  "payment-references": { title: "Pagos", subtitle: "Registro, comprobantes y cuentas bancarias" },
   ledger: { title: "Libro Contable", subtitle: "Historial inmutable con hash chain SHA-256" },
   services: { title: "Servicios Críticos", subtitle: "Cargos extraordinarios y contingencias" },
   invoices: { title: "Facturas", subtitle: "Mantenimiento mensual y estados de cuenta" },
@@ -25,6 +27,23 @@ const VIEW_TITLES: Record<View, { title: string; subtitle: string }> = {
   budget: { title: "Presupuesto", subtitle: "Presupuestado vs. real" },
   funds: { title: "Fondos", subtitle: "Ordinario, reserva, extraordinario" },
   reports: { title: "Reportes", subtitle: "Estadísticas y exportación de datos" },
+  polls: { title: "Votaciones", subtitle: "Votaciones con peso por indiviso" },
+  announcements: { title: "Avisos y Morosos", subtitle: "Cartelera digital y morosidad" },
+  requests: { title: "Solicitudes", subtitle: "Help-desk de residentes" },
+  facilities: { title: "Áreas Comunes", subtitle: "Reservas de instalaciones" },
+  calendar: { title: "Calendario", subtitle: "Eventos y asambleas" },
+  messages: { title: "Mensajes", subtitle: "Chat interno del condominio" },
+  marketplace: { title: "Marketplace", subtitle: "Compra-venta entre vecinos" },
+  documents: { title: "Documentos", subtitle: "Actas, manuales y documentos" },
+  works: { title: "Obras", subtitle: "Proyectos y mantenimiento" },
+  directory: { title: "Directorio", subtitle: "Vecinos y contactos" },
+  visitors: { title: "Visitantes", subtitle: "Control de check-in/out" },
+  vehicles: { title: "Vehículos", subtitle: "Placas y permisos" },
+  alerts: { title: "Alertas", subtitle: "Incidencias y novedades" },
+  "access-log": { title: "Bitácora", subtitle: "Registro de accesos" },
+  "invite-code": { title: "Código de Invitación", subtitle: "Para que residentes se unan" },
+  team: { title: "Equipo", subtitle: "Roles y permisos" },
+  "module-config": { title: "Módulos", subtitle: "Activar o desactivar funciones" },
   settings: { title: "Ajustes", subtitle: "Configuración del condominio" },
 };
 
@@ -113,7 +132,7 @@ export function Topbar() {
                   {formatDate(bcv.date)}
                   {bcv.isToday ? (
                     <Badge variant="outline" className="h-3.5 px-1 text-[9px] gap-0.5 ml-1 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900">
-                      <CheckCircle2 className="h-2 w-2" /> Hoy
+                      <CheckCircle2 className="h-2 w-2" /> Actualizado
                     </Badge>
                   ) : (
                     <Badge variant="outline" className="h-3.5 px-1 text-[9px] ml-1 bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900">
