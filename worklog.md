@@ -415,3 +415,25 @@ Stage Summary:
 - shape-landing-hero.tsx: pt-44 → pt-28 (sube el hero un poquito)
 - Dev server reiniciado con setsid para estabilidad
 - Ambos cambios verificados visualmente con VLM
+
+---
+Task ID: LANDING-TWEAKS-6
+Agent: main (Z.ai Code)
+Task: Borrar el scrollbar vertical que aparecía al lado derecho de la página (en la ventana del navegador).
+
+Work Log:
+- Analicé la captura del usuario (Captura de pantalla 2026-06-28 201033.png) con VLM comparándola con una captura actual del servidor
+- VLM identificó: "El elemento a borrar es un scrollbar vertical gris oscuro, ubicado en el borde derecho de la ventana del navegador"
+- Revisé src/app/globals.css: los estilos `.scroll-fine::-webkit-scrollbar` existentes son SOLO para listas internas (width 8px), no afectan el scrollbar del viewport
+- Añadí estilos globales en `html` para ocultar el scrollbar del viewport principal manteniendo la funcionalidad de scroll:
+  * `html { scrollbar-width: none; -ms-overflow-style: none; }` para Firefox e IE/Edge
+  * `html::-webkit-scrollbar { width: 0; height: 0; display: none; }` para Chrome/Safari/Opera
+- Verificación con Agent Browser:
+  * `window.innerWidth - document.documentElement.clientWidth` = 0px (scrollbar oculto) ✓
+  * `window.scrollTo(0, 500)` → scrollY = 500 (scroll sigue funcionando) ✓
+  * VLM confirma: "¿Hay scrollbar vertical visible en el borde derecho? NO" ✓
+
+Stage Summary:
+- globals.css: añadidos estilos para ocultar scrollbar del html (viewport principal) en todos los navegadores
+- Los scrollbars internos (.scroll-fine) se preservan para listas largas dentro de cards
+- Scroll de la página funciona normalmente, solo no se ve la barra

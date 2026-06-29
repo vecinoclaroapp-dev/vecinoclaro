@@ -190,6 +190,17 @@
   .scroll-fine::-webkit-scrollbar-track {
     background: transparent;
   }
+  /* Ocultar scrollbar del viewport principal (ventana del navegador)
+     manteniendo la funcionalidad de scroll */
+  html {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+  }
+  html::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none; /* Chrome, Safari, Opera */
+  }
   /* Transición suave global en elementos interactivos */
   button, a, [role="button"] {
     transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, opacity 150ms ease, transform 150ms ease;
