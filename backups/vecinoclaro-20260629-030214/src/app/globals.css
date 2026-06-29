@@ -1,0 +1,262 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Marca CondominioDigital VE: emerald (confianza/finanzas) + amber (calor VE) */
+  --color-usd: var(--usd);
+  --color-usd-foreground: var(--usd-foreground);
+  --color-ves: var(--ves);
+  --color-ves-foreground: var(--ves-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+}
+
+:root {
+  --radius: 0.75rem;
+  --background: oklch(0.99 0.004 145);
+  --foreground: oklch(0.21 0.02 160);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.02 160);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.21 0.02 160);
+
+  /* Emerald primario — finanzas/confianza, evoca bandera VE */
+  --primary: oklch(0.51 0.12 162);
+  --primary-foreground: oklch(0.99 0.01 145);
+
+  --secondary: oklch(0.96 0.015 145);
+  --secondary-foreground: oklch(0.3 0.03 160);
+  --muted: oklch(0.96 0.01 145);
+  --muted-foreground: oklch(0.52 0.02 160);
+
+  /* Amber de acento — amarillo de bandera VE */
+  --accent: oklch(0.95 0.04 75);
+  --accent-foreground: oklch(0.37 0.09 65);
+
+  --destructive: oklch(0.58 0.22 27);
+  --border: oklch(0.91 0.01 145);
+  --input: oklch(0.91 0.01 145);
+  --ring: oklch(0.51 0.12 162);
+
+  --chart-1: oklch(0.51 0.12 162);
+  --chart-2: oklch(0.7 0.15 75);
+  --chart-3: oklch(0.6 0.13 230);
+  --chart-4: oklch(0.65 0.2 350);
+  --chart-5: oklch(0.55 0.14 290);
+
+  /* Tokens semánticos bimonetarios */
+  --usd: oklch(0.51 0.12 162);
+  --usd-foreground: oklch(0.99 0.01 145);
+  --ves: oklch(0.4 0.04 250);
+  --ves-foreground: oklch(0.99 0.01 145);
+  --success: oklch(0.6 0.14 155);
+  --warning: oklch(0.75 0.16 70);
+
+  --sidebar: oklch(0.985 0.005 160);
+  --sidebar-foreground: oklch(0.25 0.02 160);
+  --sidebar-primary: oklch(0.51 0.12 162);
+  --sidebar-primary-foreground: oklch(0.99 0.01 145);
+  --sidebar-accent: oklch(0.94 0.02 160);
+  --sidebar-accent-foreground: oklch(0.3 0.03 160);
+  --sidebar-border: oklch(0.9 0.01 160);
+  --sidebar-ring: oklch(0.51 0.12 162);
+}
+
+.dark {
+  --background: oklch(0.16 0.015 165);
+  --foreground: oklch(0.96 0.005 145);
+  --card: oklch(0.21 0.018 165);
+  --card-foreground: oklch(0.96 0.005 145);
+  --popover: oklch(0.21 0.018 165);
+  --popover-foreground: oklch(0.96 0.005 145);
+
+  --primary: oklch(0.7 0.13 162);
+  --primary-foreground: oklch(0.18 0.02 165);
+
+  --secondary: oklch(0.27 0.02 165);
+  --secondary-foreground: oklch(0.96 0.005 145);
+  --muted: oklch(0.26 0.018 165);
+  --muted-foreground: oklch(0.7 0.015 160);
+
+  --accent: oklch(0.34 0.06 70);
+  --accent-foreground: oklch(0.95 0.03 75);
+
+  --destructive: oklch(0.7 0.19 22);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.7 0.13 162);
+
+  --chart-1: oklch(0.7 0.13 162);
+  --chart-2: oklch(0.75 0.15 75);
+  --chart-3: oklch(0.65 0.13 230);
+  --chart-4: oklch(0.68 0.2 350);
+  --chart-5: oklch(0.62 0.14 290);
+
+  --usd: oklch(0.7 0.13 162);
+  --usd-foreground: oklch(0.18 0.02 165);
+  --ves: oklch(0.7 0.04 250);
+  --ves-foreground: oklch(0.18 0.02 165);
+  --success: oklch(0.7 0.14 155);
+  --warning: oklch(0.78 0.16 70);
+
+  --sidebar: oklch(0.19 0.018 165);
+  --sidebar-foreground: oklch(0.96 0.005 145);
+  --sidebar-primary: oklch(0.7 0.13 162);
+  --sidebar-primary-foreground: oklch(0.18 0.02 165);
+  --sidebar-accent: oklch(0.27 0.02 165);
+  --sidebar-accent-foreground: oklch(0.96 0.005 145);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.7 0.13 162);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "tnum" 1, "cv01" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  /* Tipografía con jerarquía clara */
+  h1 {
+    @apply text-2xl font-bold tracking-tight;
+    letter-spacing: -0.025em;
+  }
+  h2 {
+    @apply text-xl font-bold tracking-tight;
+    letter-spacing: -0.02em;
+  }
+  h3 {
+    @apply text-base font-semibold;
+  }
+  /* Scrollbar suave para listas largas */
+  .scroll-fine::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scroll-fine::-webkit-scrollbar-thumb {
+    background: oklch(0.7 0.01 160);
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  .scroll-fine::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.55 0.02 160);
+    background-clip: padding-box;
+    border: 2px solid transparent;
+  }
+  .scroll-fine::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  /* Ocultar scrollbar del viewport principal (ventana del navegador)
+     manteniendo la funcionalidad de scroll, y prevenir overflow horizontal */
+  html, body {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none; /* Chrome, Safari, Opera */
+  }
+  /* Prevenir que cualquier elemento cause overflow horizontal */
+  body {
+    position: relative;
+    width: 100%;
+  }
+  /* Transición suave global en elementos interactivos */
+  button, a, [role="button"] {
+    transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, opacity 150ms ease, transform 150ms ease;
+  }
+}
+
+@layer utilities {
+  /* Texto numérico tabular para montos */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+  /* Valores bimonetarios con mejor contraste (no gris claro) */
+  .text-usd {
+    color: var(--usd);
+  }
+  .text-ves {
+    color: oklch(0.42 0.05 250);
+  }
+  .dark .text-ves {
+    color: oklch(0.75 0.04 250);
+  }
+  .bg-usd {
+    background-color: var(--usd);
+    color: var(--usd-foreground);
+  }
+  .bg-ves {
+    background-color: var(--ves);
+    color: var(--ves-foreground);
+  }
+  /* Patrón sutil para fondos de hero */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, oklch(0.51 0.12 162 / 0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, oklch(0.51 0.12 162 / 0.06) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  /* Tokens de padding consistentes para cards */
+  .card-pad {
+    @apply p-5 md:p-6;
+  }
+  .card-pad-sm {
+    @apply p-4 md:p-5;
+  }
+  /* Sombra suave para cards elevadas */
+  .shadow-soft {
+    box-shadow: 0 1px 2px 0 oklch(0.21 0.02 160 / 0.04), 0 1px 3px 0 oklch(0.21 0.02 160 / 0.06);
+  }
+  .shadow-soft-lg {
+    box-shadow: 0 4px 6px -1px oklch(0.21 0.02 160 / 0.06), 0 2px 4px -1px oklch(0.21 0.02 160 / 0.04);
+  }
+}

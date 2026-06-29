@@ -790,3 +790,30 @@ Stage Summary:
 - stats-section.tsx: stat reemplazada de "4 claves IA" → "90% precisión OCR"
 - Información técnica interna (infraestructura de API keys, rotación, fallbacks) eliminada de toda superficie pública
 - Mensajes ahora orientados al valor del usuario (verificación automática, precisión OCR)
+
+---
+Task ID: BACKUP-16
+Agent: main (Z.ai Code)
+Task: Crear copia de seguridad completa del proyecto VecinoClaro antes de cerrar la sesión, para prevenir pérdida de datos como ocurrió antes.
+
+Work Log:
+- Creé directorio backups/vecinoclaro-20260629-030214/
+- Archivos respaldados:
+  * custom.db (720 KB) — base de datos SQLite con 3 usuarios admin + 2 condominios + todos los datos de prueba
+  * schema.prisma (32 KB) — 44 modelos incluyendo el nuevo Membership
+  * .env — con NEXTAUTH_SECRET, GROQ_API_KEYs, GMAIL creds, DATABASE_URL
+  * src/ completo — todo el código fuente (105 componentes, 63 APIs, hooks, stores, libs)
+  * package.json, next.config.ts, tailwind.config.ts, tsconfig.json
+  * vecinoclaro-context.pdf (671 KB) — documento de contexto para The Agency
+  * FASE-12-BACKLOG.md (34 KB) — backlog completo de 326 bugs
+  * worklog.md (67 KB) — historial completo de la sesión
+  * README-RESTAURACION.md — instrucciones paso a paso para restaurar
+- Creé tar.gz comprimido: backups/vecinoclaro-backup-20260629.tar.gz (812 KB, 310 archivos)
+- Verificación: tar -tzf confirma 310 archivos en el backup comprimido
+
+Stage Summary:
+- Backup completo creado en /home/z/my-project/backups/
+- 2 formatos: carpeta descomprimida (3.3 MB) + tar.gz (812 KB)
+- README de restauración incluido con instrucciones detalladas
+- Incluye TODOS los archivos críticos: DB, schema, env, código, configs, docs
+- Próxima sesión: si algo se rompe, restaurar desde backups/vecinoclaro-20260629-030214/

@@ -1,0 +1,978 @@
+// =====================================================================
+// CondominioDigital VE — Schema Bimonetario + Auth + Módulos Vivook-VE
+// =====================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------
+// USUARIOS Y AUTH
+// ---------------------------------------------------------------------
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String
+  password      String?  // null si viene de OAuth (Google)
+  role          String   @default("ADMIN") // SUPER_ADMIN | ADMIN | TREASURER | RESIDENT
+  phone         String?
+  image         String?  // avatar (Google)
+  provider      String   @default("credentials") // credentials | google
+  active        Boolean  @default(true)
+  emailVerified DateTime?
+
+  // Onboarding
+  onboardingDone Boolean @default(false)
+  onboardingStep Int     @default(0)
+
+  // Relaciones (un usuario puede administrar múltiples condominios)
+  memberships   CondominiumMember[]
+  payments      Payment[]
+  serviceCharges ServiceCharge[]
+  expenses      Expense[]
+  bcvSyncs      BcvSync[]
+  announcements Announcement[]
+  requests      ResidentRequest[]
+  messagesSent  Message[] @relation("MessageSender")
+  messagesRecv  Message[] @relation("MessageRecipient")
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  @@unique([identifier, token])
+}
+
+// ---------------------------------------------------------------------
+// CONDOMINIO Y MEMBRESÍAS
+// ---------------------------------------------------------------------
+
+model Condominium {
+  id              String   @id @default(cuid())
+  name            String
+  rif             String
+  address         String
+  city            String?
+  adminName       String?
+  adminPhone      String?
+  adminEmail      String?
+  baseFeeUSD      Float    @default(0) // cuota mensual base en USD (0 si no definida)
+  reserveFund     Float    @default(0) // fondo de reserva acumulado en USD
+  logoUrl         String?
+  primaryColor    String?  // color de marca del condominio
+  inviteCode      String?  // código de invitación para residentes
+  setupComplete   Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  members         CondominiumMember[]
+  residences      Residence[]
+  serviceCharges  ServiceCharge[]
+  expenses        Expense[]
+  funds           Fund[]
+  budgets         Budget[]
+  bankAccounts    BankAccount[]
+  suppliers       Supplier[]
+  announcements   Announcement[]
+  events          CalendarEvent[]
+  facilities      Facility[]
+  polls           Poll[]
+  requests        ResidentRequest[]
+  documents       Document[]
+  tasks           AdminTask[]
+  // Módulos extendidos
+  marketplaceListings MarketplaceListing[]
+  works               Work[]
+  directoryEntries    DirectoryEntry[]
+  visitors            Visitor[]
+  vehicles            Vehicle[]
+  securityAlerts      SecurityAlert[]
+  accessLogs          AccessLogEntry[]
+  teamInvites         TeamInvite[]
+  moduleConfigs       ModuleConfig[]
+  billingConfig       BillingConfig?
+  receipts            Receipt[]
+  paymentReferences   PaymentReference[]
+  memberships         Membership[]
+}
+
+model CondominiumMember {
+  id              String   @id @default(cuid())
+  userId          String
+  condominiumId   String
+  role            String   @default("ADMIN") // ADMIN | TREASURER | RESIDENT
+  residenceId     String?  // si es residente, su vivienda
+  invitedAt       DateTime @default(now())
+  acceptedAt      DateTime?
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  condominium  Condominium  @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  residence    Residence?   @relation(fields: [residenceId], references: [id])
+
+  @@unique([userId, condominiumId])
+  @@index([condominiumId])
+}
+
+model Residence {
+  id            String   @id @default(cuid())
+  condominiumId String
+  number        String   // "12-A", "Casa 5", "Local 1"
+  floor         String?
+  type          String   @default("APARTMENT") // APARTMENT | HOUSE | LOCAL | PARKING | STORAGE
+  aliquot       Float    @default(1) // alícuota (1 = estándar, 2.5 = local grande)
+  ownerName     String?
+  ownerPhone    String?
+  ownerEmail    String?
+  residentName  String?
+  residentPhone String?
+  joinCode      String?  // código para que un residente se vincule a esta vivienda
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  condominium    Condominium     @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  members        CondominiumMember[]
+  payments       Payment[]
+  ledgerEntries  AccountEntry[]
+  serviceCharges ServiceCharge[]
+  invoices       Invoice[]
+  reservations   FacilityReservation[]
+
+  @@unique([condominiumId, number])
+  @@index([condominiumId])
+  @@index([active])
+}
+
+// ---------------------------------------------------------------------
+// TASA DE CAMBIO BCV (versión diaria, inmutable)
+// ---------------------------------------------------------------------
+
+model BcvRate {
+  id        String   @id @default(cuid())
+  rate      Float    // VES por 1 USD
+  date      DateTime @unique
+  source    String   @default("BCV") // BCV | MANUAL | PYDOLARVE | API
+  fetchedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  payments       Payment[]
+  ledgerEntries  AccountEntry[]
+  serviceCharges ServiceCharge[]
+  invoices       Invoice[]
+  expenses       Expense[]
+  budgets        Budget[]
+
+  @@index([date])
+}
+
+model BcvSync {
+  id            String   @id @default(cuid())
+  rate          Float
+  source        String
+  status        String   @default("SUCCESS")
+  message       String?
+  triggeredById String?
+  triggeredBy   User?    @relation(fields: [triggeredById], references: [id])
+  createdAt     DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------
+// PAGOS (pasarela localizada VE)
+// ---------------------------------------------------------------------
+
+model Payment {
+  id          String   @id @default(cuid())
+  residenceId String
+  residence   Residence @relation(fields: [residenceId], references: [id], onDelete: Cascade)
+
+  amountUSD   Float
+  amountVES   Float
+  bcvRateId   String
+  bcvRate     BcvRate  @relation(fields: [bcvRateId], references: [id])
+
+  method      String   // PAGO_MOVIL | TRANSFERENCIA_NAC | ZELLE | EFECTIVO | REFERENCIADO
+  reference   String?
+  bankOrigin  String?
+  payerPhone  String?
+  payerName   String?
+  payerDoc    String?
+  destinationAccountId String? // cuenta bancaria del condominio donde se recibió
+  fundId      String?  // a qué fondo se aplica
+
+  concept     String
+  category    String   @default("MAINTENANCE") // MAINTENANCE | SERVICE_CHARGE | RESERVE | OTHER
+
+  status      String   @default("CONFIRMED") // PENDING | CONFIRMED | REJECTED
+  date        DateTime
+  notes       String?
+
+  recordedById String?
+  recordedBy   User?   @relation(fields: [recordedById], references: [id])
+
+  // Relación 1:1 con el asiento contable (el FK lo posee AccountEntry)
+  ledgerEntry AccountEntry?
+
+  expenseId String? // si este pago cancela una cuenta por pagar
+
+  createdAt DateTime @default(now())
+
+  @@index([residenceId])
+  @@index([date])
+  @@index([status])
+  @@index([method])
+  @@index([category])
+}
+
+// ---------------------------------------------------------------------
+// LIBRO CONTABLE INMUTABLE (hash chain SHA-256)
+// ---------------------------------------------------------------------
+
+model AccountEntry {
+  id            String   @id @default(cuid())
+  residenceId   String?
+  residence     Residence? @relation(fields: [residenceId], references: [id], onDelete: Cascade)
+  condominiumId String?  // si no es por vivienda (gasto general)
+
+  type          String   // CREDIT (abono/pago) | DEBIT (cargo/factura/gasto)
+
+  amountUSD     Float
+  amountVES     Float
+  bcvRateId     String
+  bcvRate       BcvRate  @relation(fields: [bcvRateId], references: [id])
+
+  concept       String
+  category      String
+  reference     String?
+  fundId        String?  // fondo afectado
+
+  date          DateTime
+
+  hash          String   @unique
+  prevHash      String?
+
+  paymentId      String?  @unique
+  payment        Payment? @relation(fields: [paymentId], references: [id])
+  invoiceId      String?
+  serviceChargeId String?
+  expenseId      String?
+
+  createdAt DateTime @default(now())
+
+  @@index([residenceId, date])
+  @@index([condominiumId, date])
+  @@index([type])
+  @@index([category])
+  @@index([date])
+}
+
+// ---------------------------------------------------------------------
+// SERVICIOS CRÍTICOS
+// ---------------------------------------------------------------------
+
+model ServiceCharge {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  residenceId   String?
+  residence     Residence? @relation(fields: [residenceId], references: [id], onDelete: Cascade)
+
+  type          String   // ELECTRIC_PLANT | WATER_WELL | CONTINGENCY | EXTRAORDINARY | REPAIR
+  title         String
+  description   String?
+
+  amountUSD     Float
+  amountVES     Float
+  bcvRateId     String
+  bcvRate       BcvRate  @relation(fields: [bcvRateId], references: [id])
+
+  dueDate       DateTime
+  status        String   @default("PENDING")
+
+  createdById   String?
+  createdBy     User?    @relation(fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([condominiumId])
+  @@index([status])
+  @@index([type])
+}
+
+// ---------------------------------------------------------------------
+// FACTURAS DE MANTENIMIENTO MENSUAL
+// ---------------------------------------------------------------------
+
+model Invoice {
+  id            String   @id @default(cuid())
+  residenceId   String
+  residence     Residence @relation(fields: [residenceId], references: [id], onDelete: Cascade)
+
+  period        String   // "2025-01"
+  amountUSD     Float
+  amountVES     Float
+  bcvRateId     String
+  bcvRate       BcvRate  @relation(fields: [bcvRateId], references: [id])
+
+  dueDate       DateTime
+  status        String   @default("PENDING")
+  paidAmountUSD Float    @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@unique([residenceId, period])
+  @@index([status])
+  @@index([period])
+}
+
+// ---------------------------------------------------------------------
+// GASTOS Y PROVEEDORES (egresos)
+// ---------------------------------------------------------------------
+
+model Supplier {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  name          String
+  rif           String?
+  contactName   String?
+  phone         String?
+  email         String?
+  bankAccount   String?
+  bankName      String?
+  category      String?  // ELECTRICIDAD | AGUA | SEGURIDAD | LIMPIEZA | MANTENIMIENTO | OTRO
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  expenses      Expense[]
+  payables      AccountPayable[]
+
+  @@index([condominiumId])
+}
+
+model Expense {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  supplierId    String?
+  supplier      Supplier? @relation(fields: [supplierId], references: [id])
+  residenceId   String?  // si es gasto directo a una vivienda
+
+  concept       String
+  description   String?
+  category      String   // ELECTRICIDAD | AGUA | SEGURIDAD | LIMPIEZA | MANTENIMIENTO | NOMINA | IMPUESTOS | OTRO
+  fundId        String?
+
+  amountUSD     Float
+  amountVES     Float
+  bcvRateId     String
+  bcvRate       BcvRate  @relation(fields: [bcvRateId], references: [id])
+
+  date          DateTime
+  status        String   @default("CONFIRMED") // PENDING | CONFIRMED | CANCELLED
+  receiptUrl    String?  // comprobante digital
+  paymentMethod String?  // EFECTIVO | TRANSFERENCIA | CHEQUE | PAGO_MOVIL
+  reference     String?
+
+  recordedById  String?
+  recordedBy    User?    @relation(fields: [recordedById], references: [id])
+
+  createdAt     DateTime @default(now())
+
+  @@index([condominiumId, date])
+  @@index([category])
+  @@index([status])
+}
+
+model AccountPayable {
+  id            String   @id @default(cuid())
+  condominiumId String
+  supplierId    String?
+  supplier      Supplier? @relation(fields: [supplierId], references: [id])
+
+  concept       String
+  description   String?
+  category      String
+  amountUSD     Float
+  amountVES     Float
+  bcvRateId     String
+
+  dueDate       DateTime
+  recurring     Boolean  @default(false)
+  frequency     String?  // MENSUAL | TRIMESTRAL | ANUAL
+  status        String   @default("PENDING") // PENDING | APPROVED | PAID | REJECTED
+  approvedById  String?
+  approvedAt    DateTime?
+
+  expenseId     String?  // cuando se convierte en gasto
+  createdAt     DateTime @default(now())
+
+  @@index([condominiumId])
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------
+// CUENTAS BANCARIAS Y FONDOS
+// ---------------------------------------------------------------------
+
+model BankAccount {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  name          String   // "Cuenta corriente BDV"
+  bankName      String   // BDV, Banesco, Mercantil...
+  accountNumber String
+  accountType   String   @default("CORRIENTE") // CORRIENTE | AHORRO
+  currency      String   @default("VES") // VES | USD
+  phonePagoMovil String? // teléfono asociado al pago móvil
+  cedulaPagoMovil String?
+  active        Boolean  @default(true)
+  balanceUSD    Float    @default(0)
+  balanceVES    Float    @default(0)
+  createdAt     DateTime @default(now())
+
+  @@index([condominiumId])
+}
+
+model Fund {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  name          String   // Ordinario | Reserva | Extraordinario | Remodelaciones
+  type          String   @default("ORDINARY") // ORDINARY | RESERVE | EXTRAORDINARY | REMODELING
+  balanceUSD    Float    @default(0)
+  balanceVES    Float    @default(0)
+  targetUSD     Float?   // meta (para reserva)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  @@index([condominiumId])
+}
+
+// ---------------------------------------------------------------------
+// PRESUPUESTO
+// ---------------------------------------------------------------------
+
+model Budget {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  year          Int
+  month         Int?     // null = anual
+  category      String
+  amountUSD     Float
+  amountVES     Float
+  bcvRateId     String
+  bcvRate       BcvRate  @relation(fields: [bcvRateId], references: [id])
+  createdAt     DateTime @default(now())
+
+  @@unique([condominiumId, year, month, category])
+  @@index([condominiumId, year])
+}
+
+// ---------------------------------------------------------------------
+// TAREAS ADMINISTRATIVAS
+// ---------------------------------------------------------------------
+
+model AdminTask {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  type          String   // LAVADO_CISTERNA | MANTENIMIENTO_PREVENTIVO | REVISION | OTRO
+  frequency     String   @default("UNIQUE") // DAILY | WEEKLY | MONTHLY | UNIQUE
+  nextDate      DateTime
+  assignedTo    String?
+  status        String   @default("PENDING") // PENDING | IN_PROGRESS | DONE | OVERDUE
+  completedAt   DateTime?
+  createdAt     DateTime @default(now())
+
+  @@index([condominiumId, nextDate])
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------
+// COMUNICACIONES
+// ---------------------------------------------------------------------
+
+model Announcement {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  title         String
+  body          String
+  category      String   @default("GENERAL") // GENERAL | URGENTE | MANTENIMIENTO | FINANZAS | SEGURIDAD
+  pinned        Boolean  @default(false)
+  publishedById String?
+  publishedBy   User?    @relation(fields: [publishedById], references: [id])
+  publishedAt   DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  @@index([condominiumId, publishedAt])
+}
+
+model CalendarEvent {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  startDate     DateTime
+  endDate       DateTime?
+  type          String   @default("EVENT") // EVENT | ASAMBLEA | MANTENIMIENTO | PAGO
+  location      String?
+  createdAt     DateTime @default(now())
+
+  @@index([condominiumId, startDate])
+}
+
+model Facility {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  name          String   // Salón de eventos, Gym, Piscina
+  description   String?
+  capacity      Int?
+  openHour      Int      @default(6)
+  closeHour     Int      @default(22)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  reservations  FacilityReservation[]
+}
+
+model FacilityReservation {
+  id            String   @id @default(cuid())
+  facilityId    String
+  facility      Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  residenceId   String
+  residence     Residence @relation(fields: [residenceId], references: [id], onDelete: Cascade)
+  userId        String?
+  startDate     DateTime
+  endDate       DateTime
+  status        String   @default("PENDING") // PENDING | CONFIRMED | CANCELLED
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  @@index([facilityId, startDate])
+  @@index([residenceId])
+}
+
+model Poll {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  type          String   @default("POLL") // POLL | VOTATION (votation = peso por indiviso)
+  multipleChoice Boolean @default(false)
+  closesAt      DateTime
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  options       PollOption[]
+  votes         PollVote[]
+}
+
+model PollOption {
+  id        String   @id @default(cuid())
+  pollId    String
+  poll      Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  text      String
+  votes     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  voteRecords PollVote[]
+
+  @@index([pollId])
+}
+
+model ResidentRequest {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
+  residenceId   String?
+  title         String
+  description   String
+  category      String   @default("GENERAL") // GENERAL | MANTENIMIENTO | SEGURIDAD | QUEJA | SUGERENCIA
+  status        String   @default("OPEN") // OPEN | IN_PROGRESS | RESOLVED | CLOSED
+  priority      String   @default("NORMAL") // BAJA | NORMAL | ALTA | URGENTE
+  response      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([condominiumId, status])
+}
+
+model Document {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  category      String   @default("GENERAL") // REGLAMENTO | ACTA | ESTADO_CUENTA | INFORME | OTRO
+  fileUrl       String
+  fileType      String?
+  fileSize      Int?
+  visible       Boolean  @default(true)
+  uploadedById  String?
+  createdAt     DateTime @default(now())
+
+  @@index([condominiumId, category])
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  senderId    String
+  sender      User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  recipientId String
+  recipient   User     @relation("MessageRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  body        String
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([senderId])
+  @@index([recipientId])
+}
+
+// ---------------------------------------------------------------------
+// MÓDULOS EXTENDIDOS (Fase 4-10) — VecinoClaro
+// ---------------------------------------------------------------------
+
+model PollVote {
+  id           String     @id @default(cuid())
+  pollId       String
+  poll         Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  optionId     String
+  option       PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  userId       String
+  residenceId  String?
+  weight       Float      @default(1) // peso por indiviso/alícuota
+  createdAt    DateTime   @default(now())
+
+  @@unique([pollId, userId])
+  @@index([pollId])
+  @@index([optionId])
+}
+
+model MarketplaceListing {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  userId        String
+  title         String
+  description   String?
+  price         Float
+  currency      String   @default("USD")
+  category      String   @default("Otros")
+  condition     String   @default("USED") // NEW | USED | REFURBISHED
+  sellerName    String?
+  sellerPhone   String?
+  location      String?
+  imageUrl      String?
+  status        String   @default("ACTIVE") // ACTIVE | SOLD | REMOVED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([condominiumId])
+  @@index([status])
+}
+
+model Work {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  type          String   @default("REPAIR") // REPAIR | MAINTENANCE | IMPROVEMENT | INSPECTION
+  status        String   @default("PLANNED") // PLANNED | IN_PROGRESS | COMPLETED | CANCELLED
+  progress      Int      @default(0) // 0-100
+  startDate     DateTime?
+  endDate       DateTime?
+  budgetUSD     Float?
+  spentUSD      Float    @default(0)
+  contractor    String?
+  location      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([condominiumId])
+  @@index([status])
+}
+
+model DirectoryEntry {
+  id             String   @id @default(cuid())
+  condominiumId  String
+  condominium    Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  name           String
+  role           String   // ADMIN | STAFF | RESIDENT | SECURITY | MAINTENANCE | OTHER
+  phone          String?
+  email          String?
+  category       String   @default("RESIDENT")
+  residenceLabel String?
+  notes          String?
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  @@index([condominiumId])
+}
+
+model Visitor {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  name          String
+  documentId    String?
+  phone         String?
+  company       String?
+  plate         String?
+  residentLabel String?
+  expectedAt    DateTime?
+  checkInAt     DateTime?
+  checkOutAt    DateTime?
+  status        String   @default("PENDING") // PENDING | INSIDE | CHECKED_OUT | DENIED
+  notes         String?
+  createdBy     String?
+  createdAt     DateTime @default(now())
+
+  @@index([condominiumId])
+  @@index([status])
+}
+
+model Vehicle {
+  id             String   @id @default(cuid())
+  condominiumId  String
+  condominium    Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  plate          String
+  brand          String?
+  model          String?
+  color          String?
+  type           String   @default("CAR") // CAR | MOTORCYCLE | TRUCK | BICYCLE
+  ownerName      String?
+  ownerPhone     String?
+  residenceLabel String?
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  @@unique([condominiumId, plate])
+  @@index([condominiumId])
+}
+
+model SecurityAlert {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  severity      String   @default("INFO") // INFO | WARNING | CRITICAL
+  category      String   @default("GENERAL") // GENERAL | INTRUSION | FIRE | MEDICAL | OTHER
+  status        String   @default("OPEN") // OPEN | RESOLVED | ARCHIVED
+  location      String?
+  reportedBy    String?
+  resolvedAt    DateTime?
+  resolvedBy    String?
+  resolution    String?
+  createdAt     DateTime @default(now())
+
+  @@index([condominiumId])
+  @@index([status])
+}
+
+model AccessLogEntry {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  direction     String   // IN | OUT
+  entityName    String
+  entityType    String   @default("VISITOR") // VISITOR | RESIDENT | STAFF | VEHICLE
+  plate         String?
+  notes         String?
+  recordedBy    String?
+  occurredAt    DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  @@index([condominiumId, occurredAt])
+}
+
+model Notification {
+  id            String   @id @default(cuid())
+  userId        String
+  title         String
+  body          String?
+  category      String   @default("GENERAL")
+  link          String?
+  read          Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  @@index([userId, read])
+  @@index([userId, createdAt])
+}
+
+model TeamInvite {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  email         String
+  name          String?
+  role          String   @default("STAFF") // ADMIN | STAFF | VIEWER
+  token         String   @unique
+  status        String   @default("PENDING") // PENDING | ACCEPTED | CANCELLED
+  invitedById   String
+  acceptedAt    DateTime?
+  createdAt     DateTime @default(now())
+
+  @@index([condominiumId])
+  @@index([email])
+}
+
+model ModuleConfig {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  moduleKey     String
+  enabled       Boolean  @default(true)
+  updatedAt     DateTime @updatedAt
+
+  @@unique([condominiumId, moduleKey])
+}
+
+model BillingConfig {
+  id                 String   @id @default(cuid())
+  condominiumId      String   @unique
+  condominium        Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  invoiceDay         Int      @default(1)
+  dueDays            Int      @default(15)
+  lateFeePercent     Float    @default(0)
+  lateFeeFixedUSD    Float    @default(0)
+  graceDays          Int      @default(0)
+  autoGenerate       Boolean  @default(false)
+  updatedAt          DateTime @updatedAt
+}
+
+model Receipt {
+  id              String   @id @default(cuid())
+  condominiumId   String
+  condominium     Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  residenceId     String?
+  userId          String?
+  fileUrl         String
+  fileName        String?
+  fileSize        Int?
+  fileType        String?
+  amountUSD       Float?
+  amountVES       Float?
+  reference       String?
+  payerName       String?
+  payerDoc        String?
+  method          String?
+  ocrRaw          String?
+  ocrStatus       String   @default("PENDING") // PENDING | PROCESSED | FAILED | MANUAL
+  status          String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  reviewedById    String?
+  reviewedAt      DateTime?
+  rejectionReason String?
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  @@index([condominiumId])
+  @@index([status])
+}
+
+model PaymentReference {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  residenceId   String?
+  method        String   // PAGO_MOVIL | TRANSFERENCIA_NAC | ZELLE | EFECTIVO
+  bank          String?
+  accountHolder String
+  accountNumber String
+  documentId    String?
+  phone         String?
+  notes         String?
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  @@index([condominiumId])
+  @@index([residenceId])
+}
+
+// ---------------------------------------------------------------------
+// MEMBRESÍA — Modelo de suscripción SaaS por condominio
+// Cada apartamento paga $2 USD/mes (a tasa BCV) por usar la app
+// El condominio paga el total = ($2 × número de apartamentos activos)
+// ---------------------------------------------------------------------
+
+model Membership {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+
+  // Período facturado (ej: "2026-06" para junio 2026)
+  period        String   // formato YYYY-MM
+
+  // Cálculo de la membresía
+  activeResidences Int   // número de apartamentos activos en el período
+  ratePerAptUSD     Float @default(2.0) // tarifa por apartamento en USD (por defecto $2)
+  totalUSD          Float // activeResidences × ratePerAptUSD
+  totalVES          Float // totalUSD × tasa BCV del período
+  bcvRate           Float // snapshot de la tasa BCV aplicada
+
+  // Estado del pago
+  status        String   @default("PENDING") // PENDING | PAID | OVERDUE | WAIVED
+  paidAt        DateTime?
+  paidMethod    String?  // PAGO_MOVIL | ZELLE | TRANSFERENCIA_NAC | EFECTIVO | MANUAL
+  paidReference String?  // referencia del pago
+  paidById      String?  // usuario que marcó como pagado
+
+  // Fechas
+  dueDate       DateTime // fecha límite de pago (ej: día 10 del mes siguiente)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([condominiumId, period]) // un solo registro por condominio por período
+  @@index([condominiumId])
+  @@index([status])
+}
