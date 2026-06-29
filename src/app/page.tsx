@@ -10,6 +10,8 @@ import { Topbar } from "@/components/layout/topbar";
 import { DashboardView } from "@/components/dashboard/dashboard-view";
 import { ResidencesView } from "@/components/residences/residences-view";
 import { PaymentsView } from "@/components/payments/payments-view";
+import { ReceiptsView } from "@/components/payments/receipts-view";
+import { PaymentReferencesView } from "@/components/admin/payment-references-view";
 import { LedgerView } from "@/components/ledger/ledger-view";
 import { ServicesView } from "@/components/services/services-view";
 import { InvoicesView } from "@/components/invoices/invoices-view";
@@ -17,11 +19,28 @@ import { ExpensesView } from "@/components/expenses/expenses-view";
 import { BudgetView } from "@/components/budget/budget-view";
 import { FundsView } from "@/components/funds/funds-view";
 import { ReportsView } from "@/components/dashboard/reports-view";
+import { PollsView } from "@/components/polls/polls-view";
+import { AnnouncementsView } from "@/components/announcements/announcements-view";
+import { RequestsView } from "@/components/requests/requests-view";
+import { FacilitiesView } from "@/components/facilities/facilities-view";
+import { CalendarView } from "@/components/calendar/calendar-view";
+import { MessagesView } from "@/components/messages/messages-view";
+import { MarketplaceView } from "@/components/marketplace/marketplace-view";
+import { DocumentsView } from "@/components/documents/documents-view";
+import { WorksView } from "@/components/works/works-view";
+import { DirectoryView } from "@/components/directory/directory-view";
+import { VisitorsView } from "@/components/security/visitors-view";
+import { VehiclesView } from "@/components/security/vehicles-view";
+import { AlertsView } from "@/components/security/alerts-view";
+import { AccessLogView } from "@/components/security/access-log-view";
+import { InviteCodeView } from "@/components/admin/invite-code-view";
+import { TeamView } from "@/components/admin/team-view";
+import { ModuleConfigView } from "@/components/admin/module-config-view";
 import { SettingsView } from "@/components/dashboard/settings-view";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppStore } from "@/store/app-store";
 
-type GuestView = "landing" | "auth";
+type GuestView = "landing" | "auth" | "register";
 
 export default function Home() {
   const { data, isLoading, refetch } = useMe();
@@ -50,13 +69,14 @@ export default function Home() {
     if (guestView === "landing") {
       return (
         <LandingPage
-          onGetStarted={() => setGuestView("auth")}
+          onGetStarted={() => setGuestView("register")}
           onLogin={() => setGuestView("auth")}
         />
       );
     }
     return (
       <AuthScreen
+        initialMode={guestView === "register" ? "register" : "login"}
         onAuthed={() => setForceRefresh((n) => n + 1)}
         onBack={() => setGuestView("landing")}
       />
@@ -79,6 +99,8 @@ export default function Home() {
             {view === "dashboard" && <DashboardView />}
             {view === "residences" && <ResidencesView />}
             {view === "payments" && <PaymentsView />}
+            {view === "receipts" && <ReceiptsView />}
+            {view === "payment-references" && <PaymentReferencesView />}
             {view === "ledger" && <LedgerView />}
             {view === "services" && <ServicesView />}
             {view === "invoices" && <InvoicesView />}
@@ -86,6 +108,23 @@ export default function Home() {
             {view === "budget" && <BudgetView />}
             {view === "funds" && <FundsView />}
             {view === "reports" && <ReportsView />}
+            {view === "polls" && <PollsView />}
+            {view === "announcements" && <AnnouncementsView />}
+            {view === "requests" && <RequestsView />}
+            {view === "facilities" && <FacilitiesView />}
+            {view === "calendar" && <CalendarView />}
+            {view === "messages" && <MessagesView />}
+            {view === "marketplace" && <MarketplaceView />}
+            {view === "documents" && <DocumentsView />}
+            {view === "works" && <WorksView />}
+            {view === "directory" && <DirectoryView />}
+            {view === "visitors" && <VisitorsView />}
+            {view === "vehicles" && <VehiclesView />}
+            {view === "alerts" && <AlertsView />}
+            {view === "access-log" && <AccessLogView />}
+            {view === "invite-code" && <InviteCodeView />}
+            {view === "team" && <TeamView />}
+            {view === "module-config" && <ModuleConfigView />}
             {view === "settings" && <SettingsView />}
           </div>
         </main>

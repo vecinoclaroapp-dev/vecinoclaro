@@ -468,3 +468,46 @@ Stage Summary:
 - Fix previene que elementos del footer (giant text, marquee con scale-110) causen scroll horizontal
 - Verificado que el borde derecho está completamente limpio
 - Si el usuario aún lo ve, debe hard-refresh (Ctrl+Shift+R) para limpiar cache del navegador
+
+---
+Task ID: FIX-LOGIN-DASHBOARD-8
+Agent: main (Z.ai Code)
+Task: El usuario reportó que el login no funcionaba y el dashboard no estaba actualizado con todas las vistas. Investigación y fix completo.
+
+Work Log:
+- Análisis con VLM de la captura del usuario: mostraba página de login de VecinoClaro bien renderizada
+- Verifiqué base de datos SQLite (db/custom.db): 3 usuarios admin + 2 condominios intactos. El usuario juancito8338382ridi@gmail.com existe con contraseña "123456"
+- Probé login vía curl: NextAuth devolvía CredentialsSignin error
+- Revisé dev.log: encontré error JWEDecryptionFailed en /api/me
+- Causa raíz: NEXTAUTH_SECRET no estaba definido en .env (warning [next-auth][warn][NO_SECRET] en logs)
+- Fix 1 — .env: generé NEXTAUTH_SECRET con `openssl rand -base64 32` y añadí NEXTAUTH_URL=http://localhost:3000
+- Reinicié dev server (necesario por cambio de .env). Tuve que usar `setsid` con subshell para estabilidad
+- Verifiqué login end-to-end con curl: sesión JWT creada correctamente + /api/me devuelve user + condominium + membershipRole ✓
+
+- Fix 2 — Dashboard incompleto: el sidebar (sidebar.tsx) solo tenía 11 vistas en NAV_ITEMS, pero existen 30 componentes de vista creados en fases 4-9
+- app-store.ts: extendí tipo View de 11 a 30 vistas (añadí receipts, payment-references, polls, announcements, requests, facilities, calendar, messages, marketplace, documents, works, directory, visitors, vehicles, alerts, access-log, invite-code, team, module-config)
+- sidebar.tsx: reestructuré NAV_ITEMS → NAV_SECTIONS con 6 grupos (Resumen, Financiero, Comunicación, Comunidad, Seguridad, Administración). 30 items total con iconos lucide (Vote, Megaphone, LifeBuoy, CalendarDays, MessageSquare, ShoppingBag, FolderOpen, HardHat, Users, UserCheck, Car, Bell, ScrollText, KeyRound, ShieldCheck, Blocks, ScanLine, Landmark)
+- page.tsx: añadí imports y conditional renders para las 19 vistas faltantes
+- Verifiqué que los 19 exports de componentes coincidan con los imports: todos ✅
+
+- Fix 3 — UX del botón "Crear cuenta": abría AuthScreen en modo login por defecto
+- auth-screen.tsx: añadí prop `initialMode?: "login" | "register"`
+- page.tsx: añadí GuestView "register", onGetStarted → setGuestView("register"), AuthScreen recibe initialMode según guestView
+
+- Lint: 0 errores, 0 warnings
+- Verificación con Agent Browser + VLM:
+  * Login con juancito8338382ridi@gmail.com / 123456 → dashboard carga ✓
+  * Sidebar muestra 30 vistas agrupadas en 6 secciones ✓
+  * Click en "Votaciones" → vista de votaciones carga ("No hay votaciones activas") ✓
+  * Click en "Comprobantes IA" → vista de receipts carga ("No hay comprobantes") ✓
+  * Click en "Código invitación" → vista con código del condominio carga ✓
+  * Logout → vuelve a landing ✓
+  * Click "Crear cuenta" → abre directo en modo registro con campos Nombre/Email/Contraseña ✓ (antes abría modo login)
+
+Stage Summary:
+- .env: añadido NEXTAUTH_SECRET + NEXTAUTH_URL (arregla JWEDecryptionFailed)
+- app-store.ts: tipo View extendido de 11 a 30 vistas
+- sidebar.tsx: 11 items → 30 items en 6 secciones agrupadas
+- page.tsx: 11 conditional renders → 30, + prop initialMode para modo registro
+- auth-screen.tsx: + prop initialMode
+- Login + registro + dashboard completo verificados end-to-end

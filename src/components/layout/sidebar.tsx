@@ -19,23 +19,93 @@ import {
   Building2,
   X,
   LogOut,
+  Vote,
+  Megaphone,
+  LifeBuoy,
+  CalendarDays,
+  MessageSquare,
+  ShoppingBag,
+  FolderOpen,
+  HardHat,
+  Users,
+  UserCheck,
+  Car,
+  Bell,
+  ScrollText,
+  KeyRound,
+  ShieldCheck,
+  Blocks,
+  ScanLine,
+  Landmark,
 } from "lucide-react";
 import { useCondominium } from "@/hooks/use-api";
 import { useMe, useLogout } from "@/hooks/use-auth";
 import { toast } from "sonner";
 
-const NAV_ITEMS: { view: View; label: string; icon: React.ComponentType<{ className?: string }>; description: string }[] = [
-  { view: "dashboard", label: "Panel", icon: LayoutDashboard, description: "Resumen general" },
-  { view: "residences", label: "Viviendas", icon: Home, description: "Propiedades y saldos" },
-  { view: "payments", label: "Pagos", icon: CreditCard, description: "Registro y consulta" },
-  { view: "ledger", label: "Libro Contable", icon: BookOpen, description: "Historial inmutable" },
-  { view: "services", label: "Servicios Críticos", icon: Zap, description: "Cargos extraordinarios" },
-  { view: "invoices", label: "Facturas", icon: FileText, description: "Mantenimiento mensual" },
-  { view: "expenses", label: "Gastos y Proveedores", icon: Receipt, description: "Egresos del condominio" },
-  { view: "budget", label: "Presupuesto", icon: Target, description: "Presupuestado vs. real" },
-  { view: "funds", label: "Fondos", icon: Wallet, description: "Ordinario, reserva" },
-  { view: "reports", label: "Reportes", icon: BarChart3, description: "Estadísticas y exportes" },
-  { view: "settings", label: "Ajustes", icon: Settings, description: "Configuración" },
+type NavItem = { view: View; label: string; icon: React.ComponentType<{ className?: string }>; description: string };
+type NavSection = { title: string; items: NavItem[] };
+
+const NAV_SECTIONS: NavSection[] = [
+  {
+    title: "Resumen",
+    items: [
+      { view: "dashboard", label: "Panel", icon: LayoutDashboard, description: "Resumen general" },
+      { view: "reports", label: "Reportes", icon: BarChart3, description: "Estadísticas y exportes" },
+    ],
+  },
+  {
+    title: "Financiero",
+    items: [
+      { view: "residences", label: "Viviendas", icon: Home, description: "Propiedades y saldos" },
+      { view: "invoices", label: "Facturas", icon: FileText, description: "Mantenimiento mensual" },
+      { view: "payments", label: "Pagos", icon: CreditCard, description: "Registro y consulta" },
+      { view: "receipts", label: "Comprobantes IA", icon: ScanLine, description: "OCR y verificación" },
+      { view: "payment-references", label: "Cuentas de pago", icon: Landmark, description: "Bancos y referencias" },
+      { view: "ledger", label: "Libro Contable", icon: BookOpen, description: "Historial inmutable" },
+      { view: "expenses", label: "Gastos y Proveedores", icon: Receipt, description: "Egresos del condominio" },
+      { view: "services", label: "Servicios Críticos", icon: Zap, description: "Cargos extraordinarios" },
+      { view: "budget", label: "Presupuesto", icon: Target, description: "Presupuestado vs. real" },
+      { view: "funds", label: "Fondos", icon: Wallet, description: "Ordinario, reserva" },
+    ],
+  },
+  {
+    title: "Comunicación",
+    items: [
+      { view: "announcements", label: "Avisos y Morosos", icon: Megaphone, description: "Cartelera digital" },
+      { view: "polls", label: "Votaciones", icon: Vote, description: "Por indiviso (Ley PH)" },
+      { view: "requests", label: "Solicitudes", icon: LifeBuoy, description: "Help-desk de residentes" },
+      { view: "messages", label: "Mensajes", icon: MessageSquare, description: "Chat interno" },
+      { view: "calendar", label: "Calendario", icon: CalendarDays, description: "Eventos y asambleas" },
+    ],
+  },
+  {
+    title: "Comunidad",
+    items: [
+      { view: "facilities", label: "Áreas comunes", icon: Building2, description: "Reservas" },
+      { view: "directory", label: "Directorio", icon: Users, description: "Vecinos y contactos" },
+      { view: "marketplace", label: "Marketplace", icon: ShoppingBag, description: "Compra-venta" },
+      { view: "documents", label: "Documentos", icon: FolderOpen, description: "Actas y manuales" },
+      { view: "works", label: "Obras", icon: HardHat, description: "Proyectos y mantenimiento" },
+    ],
+  },
+  {
+    title: "Seguridad",
+    items: [
+      { view: "visitors", label: "Visitantes", icon: UserCheck, description: "Check-in/out" },
+      { view: "vehicles", label: "Vehículos", icon: Car, description: "Placas y permisos" },
+      { view: "alerts", label: "Alertas", icon: Bell, description: "Incidencias" },
+      { view: "access-log", label: "Bitácora", icon: ScrollText, description: "Registro de accesos" },
+    ],
+  },
+  {
+    title: "Administración",
+    items: [
+      { view: "invite-code", label: "Código invitación", icon: KeyRound, description: "Para residentes" },
+      { view: "team", label: "Equipo", icon: ShieldCheck, description: "Roles y permisos" },
+      { view: "module-config", label: "Módulos", icon: Blocks, description: "Activar/desactivar" },
+      { view: "settings", label: "Ajustes", icon: Settings, description: "Configuración" },
+    ],
+  },
 ];
 
 export function Sidebar() {
@@ -107,34 +177,41 @@ export function Sidebar() {
         </div>
 
         {/* Navegación */}
-        <nav className="flex-1 overflow-y-auto scroll-fine px-3 py-3 space-y-1">
-          {NAV_ITEMS.map((item) => {
-            const Icon = item.icon;
-            const active = view === item.view;
-            return (
-              <button
-                key={item.view}
-                onClick={() => {
-                  setView(item.view);
-                  setSidebarOpen(false);
-                }}
-                className={cn(
-                  "w-full group flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
-                  active
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent",
-                )}
-              >
-                <Icon className={cn("h-[18px] w-[18px] shrink-0", active ? "" : "text-muted-foreground group-hover:text-sidebar-foreground")} />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium leading-tight">{item.label}</p>
-                  <p className={cn("text-[11px] leading-tight truncate", active ? "text-sidebar-primary-foreground/70" : "text-muted-foreground")}>
-                    {item.description}
-                  </p>
-                </div>
-              </button>
-            );
-          })}
+        <nav className="flex-1 overflow-y-auto scroll-fine px-3 py-3 space-y-4">
+          {NAV_SECTIONS.map((section) => (
+            <div key={section.title} className="space-y-1">
+              <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                {section.title}
+              </p>
+              {section.items.map((item) => {
+                const Icon = item.icon;
+                const active = view === item.view;
+                return (
+                  <button
+                    key={item.view}
+                    onClick={() => {
+                      setView(item.view);
+                      setSidebarOpen(false);
+                    }}
+                    className={cn(
+                      "w-full group flex items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors",
+                      active
+                        ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent",
+                    )}
+                  >
+                    <Icon className={cn("h-[17px] w-[17px] shrink-0", active ? "" : "text-muted-foreground group-hover:text-sidebar-foreground")} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13px] font-medium leading-tight">{item.label}</p>
+                      <p className={cn("text-[10px] leading-tight truncate", active ? "text-sidebar-primary-foreground/70" : "text-muted-foreground")}>
+                        {item.description}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         {/* User + logout */}

@@ -30,10 +30,11 @@ import {
 type Props = {
   onAuthed: () => void;
   onBack?: () => void;
+  initialMode?: "login" | "register";
 };
 
-export function AuthScreen({ onAuthed, onBack }: Props) {
-  const [mode, setMode] = useState<"login" | "register">("login");
+export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
+  const [mode, setMode] = useState<"login" | "register">(initialMode);
   const [showPass, setShowPass] = useState(false);
   const login = useLogin();
   const register = useRegister();
