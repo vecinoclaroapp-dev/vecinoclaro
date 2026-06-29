@@ -391,3 +391,27 @@ Stage Summary:
 - shape-landing-hero.tsx: padding top aumentado (py-20 → pt-44 pb-16) para separar badge del navbar
 - stats-section.tsx: HashChainVisual eliminado, TestimonialsSection añadido (5 testimonios VE con stars animadas), CTA final eliminado, imports limpiados
 - 3 cambios solicitados completados y verificados visualmente
+
+---
+Task ID: LANDING-TWEAKS-5
+Agent: main (Z.ai Code)
+Task: 2 ajustes del hero: (1) eliminar el indicador flotante de Next.js (la "N" roja abajo a la izquierda que el usuario marcó en rojo), (2) subir un poquito el contenido del hero (badge + título + subtítulo) porque estaba muy abajo tras el cambio anterior pt-44.
+
+Work Log:
+- Analicé las 2 capturas del usuario con VLM (comparación lado a lado):
+  * Captura 1 (referencia): contenido del hero más arriba + elemento rojo con "N" abajo a la izquierda
+  * Captura 2 (problema actual): contenido del hero más abajo de lo deseado
+  * El "elemento en rojo" = indicador flotante de Next.js dev (la N circular abajo-izquierda)
+- next.config.ts: añadí `devIndicators: false` para ocultar el indicador flotante de Next.js en desarrollo
+- shape-landing-hero.tsx: reduje `pt-44 pb-16` → `pt-28 pb-16` (de 11rem a 7rem de padding top) para subir el contenido "un poquitico" manteniendo separación del navbar
+- Reinicié dev server (necesario por cambio en next.config.ts). Problema: el proceso moría tras unos segundos con nohup/disown. Solución: `setsid` con subshell `(setsid bun next dev ... &)` para desacoplamiento total de la sesión bash. PID 3001/3003 estables.
+- Verificación con Agent Browser + VLM:
+  * "No hay elemento extra/raro en la esquina inferior izquierda" ✓ (indicador Next.js oculto)
+  * "Badge con espacio suficiente del navbar" ✓
+  * "Título bien posicionado (no muy abajo)" ✓
+
+Stage Summary:
+- next.config.ts: devIndicators: false (oculta la "N" de Next.js)
+- shape-landing-hero.tsx: pt-44 → pt-28 (sube el hero un poquito)
+- Dev server reiniciado con setsid para estabilidad
+- Ambos cambios verificados visualmente con VLM
