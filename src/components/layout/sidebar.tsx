@@ -35,6 +35,7 @@ import {
   KeyRound,
   ShieldCheck,
   Blocks,
+  Crown,
 } from "lucide-react";
 import { useCondominium, useModules } from "@/hooks/use-api";
 import { useMe, useLogout } from "@/hooks/use-auth";
@@ -96,6 +97,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     title: "Administración",
     items: [
+      { view: "membership", label: "Membresía", icon: Crown, description: "Plan $2/apt/mes (3B)" },
       { view: "invite-code", label: "Código invitación", icon: KeyRound, description: "Para residentes" },
       { view: "team", label: "Equipo", icon: ShieldCheck, description: "Roles y permisos" },
       { view: "module-config", label: "Módulos", icon: Blocks, description: "Activar/desactivar" },

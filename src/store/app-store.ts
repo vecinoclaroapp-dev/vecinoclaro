@@ -32,6 +32,7 @@ export type View =
   | "invite-code"
   | "team"
   | "module-config"
+  | "membership"
   | "settings";
 
 type AppState = {

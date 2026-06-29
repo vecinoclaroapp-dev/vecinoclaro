@@ -34,6 +34,7 @@ import { AccessLogView } from "@/components/security/access-log-view";
 import { InviteCodeView } from "@/components/admin/invite-code-view";
 import { TeamView } from "@/components/admin/team-view";
 import { ModuleConfigView } from "@/components/admin/module-config-view";
+import { MembershipView } from "@/components/membership/membership-view";
 import { SettingsView } from "@/components/dashboard/settings-view";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppStore } from "@/store/app-store";
@@ -123,6 +124,7 @@ export default function Home() {
             {view === "invite-code" && <InviteCodeView />}
             {view === "team" && <TeamView />}
             {view === "module-config" && <ModuleConfigView />}
+            {view === "membership" && <MembershipView />}
             {view === "settings" && <SettingsView />}
           </div>
         </main>

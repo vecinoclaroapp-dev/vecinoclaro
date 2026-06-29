@@ -390,3 +390,32 @@ export function useModules() {
     staleTime: 30 * 1000,
   });
 }
+
+// ---------------- Memberships ----------------
+export function useMemberships() {
+  return useQuery({
+    queryKey: ["memberships"],
+    queryFn: async () => {
+      const r = await fetch("/api/memberships");
+      if (!r.ok) throw new Error("Error al cargar membresía");
+      return r.json();
+    },
+  });
+}
+
+export function usePayMembership() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { period: string; paidMethod?: string; paidReference?: string }) => {
+      const r = await fetch("/api/memberships", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || "Error al pagar membresía");
+      return j;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["memberships"] }),
+  });
+}

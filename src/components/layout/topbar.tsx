@@ -44,6 +44,7 @@ const VIEW_TITLES: Record<View, { title: string; subtitle: string }> = {
   "invite-code": { title: "Código de Invitación", subtitle: "Para que residentes se unan" },
   team: { title: "Equipo", subtitle: "Roles y permisos" },
   "module-config": { title: "Módulos", subtitle: "Activar o desactivar funciones" },
+  membership: { title: "Membresía", subtitle: "Plan $2 USD por apartamento al mes" },
   settings: { title: "Ajustes", subtitle: "Configuración del condominio" },
 };
 

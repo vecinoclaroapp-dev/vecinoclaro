@@ -652,3 +652,50 @@ Stage Summary:
 - Menciones explícitas finales: Samuel (Admin General), Freddy (líder The Agency, 147 agentes), Jefe Gemini (COO de IA, supervisión estratégica, canal directo para consultas)
 - Invitación explícita a que los agentes pregunten y comuniquen todo al Admin General
 - PDF con metadata profesional lista para entregar a Freddy
+
+---
+Task ID: MEMBRESIA-12
+Agent: main (Z.ai Code)
+Task: Crear apartado "Membresía" en la plataforma. Modelo de negocio: $2 USD por apartamento por mes (a tasa BCV) por usar la app. El condominio paga el total = $2 × número de apartamentos activos. Cumple con las 3B (Bueno, Bonito, Barato). Posicionamiento como "el mejor servicio de Venezuela".
+
+Work Log:
+- Análisis de imagen: el usuario envió captura del auth-screen. VLM confirmó que logo se ve nítido, sin distorsión. No se detectó problema visual específico que arreglar. El usuario dijo "prosigue" así que procedí con la tarea de Membresía.
+- prisma/schema.prisma: añadí modelo Membership con campos: period (YYYY-MM), activeResidences, ratePerAptUSD (default 2.0), totalUSD, totalVES, bcvRate, status (PENDING/PAID/OVERDUE/WAIVED), paidAt, paidMethod, paidReference, paidById, dueDate. Unique constraint en [condominiumId, period]. Relación Membership[] en Condominium.
+- bun run db:push: schema sincronizado a SQLite
+- src/app/api/memberships/route.ts: 
+  * GET: cuenta apartamentos activos, calcula período actual (YYYY-MM), busca o crea membresía del período automáticamente con snapshot de tasa BCV, devuelve current + history (12 períodos) + yearly stats
+  * POST: marca membresía como pagada (solo ADMIN), registra método + referencia + paidById
+- src/hooks/use-api.ts: añadí useMemberships (GET) + usePayMembership (POST)
+- src/components/membership/membership-view.tsx: vista completa con:
+  * Hero "Membresía VecinoClaro" con badge 3B y gradiente emerald/amber
+  * 3 cards explicando Bueno (30+ módulos, IA, SHA-256), Bonito (shadcn/ui, PWA, animaciones), Barato ($2/apto/mes)
+  * 4 stats: apartamentos activos, tarifa $2, total mensual, equivalente VES
+  * Card del período actual con desglose (aptos × tarifa = total), fechas, estado (PENDING/PAID/OVERDUE), botón "Marcar como pagada"
+  * 3 cards de resumen anual (total pagado, períodos pagados/total, aptos-año proyectados)
+  * Tabla de historial (12 períodos) con período, aptos, total USD/VES, estado, acción Pagar
+  * Sección oscura verde "El mejor servicio te lo da TU VecinoClaro" con 4 diferenciadores (transparencia SHA-256, IA Groq, bimonetario real, 100% local VE) + precio destacado $2 USD con equivalente BCV
+  * Dialog de pago con método (Pago Móvil/Zelle/Transferencia/Efectivo/Manual) + referencia + total
+- src/store/app-store.ts: añadí "membership" al tipo View
+- src/components/layout/sidebar.tsx: añadí Crown icon + item "Membresía" en sección Administración con descripción "Plan $2/apt/mes (3B)"
+- src/components/layout/topbar.tsx: añadí VIEW_TITLES.membership
+- src/app/page.tsx: añadí import + conditional render
+- Problema: db.membership era undefined porque Prisma Client no se regeneró. Solución: `bun x prisma generate` + reiniciar dev server con setsid
+- Lint: 0 errores
+- Verificación con Agent Browser + VLM:
+  * Hero con "Membresía VecinoClaro" y badge 3B ✓
+  * 3 cards Bueno/Bonito/Barato ✓
+  * Stats: 1 apartamento activo, tarifa $2, total USD 2.00 ✓
+  * Card del período 2026-06 con total a pagar ✓
+  * Historial de membresías ✓
+  * Sección oscura verde "El mejor servicio te lo da TU VecinoClaro" con 4 cards amarillas ✓
+
+Stage Summary:
+- Nuevo modelo de negocio implementado: $2 USD/apartamento/mes a tasa BCV
+- Modelo Prisma: Membership con 15 campos, unique constraint por período
+- API: GET (auto-crea membresía del período) + POST (marca pagada, solo ADMIN)
+- Vista: 7 secciones (hero 3B, stats, período actual, resumen anual, historial, posicionamiento, dialog pago)
+- Sidebar: "Membresía" en sección Administración con icono Crown
+- Cálculo automático: activeResidences × $2 = totalUSD, × tasaBCV = totalVES
+- Auto-generación: la membresía del mes se crea automáticamente al visitar la vista
+- 3B (Bueno, Bonito, Barato) explicado visualmente
+- Posicionamiento: "El mejor servicio te lo da TU VecinoClaro, siendo el mejor de Venezuela"

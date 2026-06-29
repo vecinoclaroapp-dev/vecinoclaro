@@ -131,6 +131,7 @@ model Condominium {
   billingConfig       BillingConfig?
   receipts            Receipt[]
   paymentReferences   PaymentReference[]
+  memberships         Membership[]
 }
 
 model CondominiumMember {
@@ -936,4 +937,42 @@ model PaymentReference {
 
   @@index([condominiumId])
   @@index([residenceId])
+}
+
+// ---------------------------------------------------------------------
+// MEMBRESÍA — Modelo de suscripción SaaS por condominio
+// Cada apartamento paga $2 USD/mes (a tasa BCV) por usar la app
+// El condominio paga el total = ($2 × número de apartamentos activos)
+// ---------------------------------------------------------------------
+
+model Membership {
+  id            String   @id @default(cuid())
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+
+  // Período facturado (ej: "2026-06" para junio 2026)
+  period        String   // formato YYYY-MM
+
+  // Cálculo de la membresía
+  activeResidences Int   // número de apartamentos activos en el período
+  ratePerAptUSD     Float @default(2.0) // tarifa por apartamento en USD (por defecto $2)
+  totalUSD          Float // activeResidences × ratePerAptUSD
+  totalVES          Float // totalUSD × tasa BCV del período
+  bcvRate           Float // snapshot de la tasa BCV aplicada
+
+  // Estado del pago
+  status        String   @default("PENDING") // PENDING | PAID | OVERDUE | WAIVED
+  paidAt        DateTime?
+  paidMethod    String?  // PAGO_MOVIL | ZELLE | TRANSFERENCIA_NAC | EFECTIVO | MANUAL
+  paidReference String?  // referencia del pago
+  paidById      String?  // usuario que marcó como pagado
+
+  // Fechas
+  dueDate       DateTime // fecha límite de pago (ej: día 10 del mes siguiente)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([condominiumId, period]) // un solo registro por condominio por período
+  @@index([condominiumId])
+  @@index([status])
 }
