@@ -255,7 +255,7 @@ export function StatsSection({ onGetStarted }: Props) {
     { value: 256, label: "Criptografía SHA-256 en cada transacción", icon: ShieldCheck, color: "amber", delay: 0.08 },
     { value: 24, suffix: "/7", label: "Acceso desde cualquier dispositivo", icon: CheckCircle2, color: "violet", delay: 0.16 },
     { value: 30, suffix: "+", label: "Módulos activables según tu condominio", icon: Database, color: "sky", delay: 0.24 },
-    { value: 4, label: "Claves IA con rotación automática (Groq)", icon: Lock, color: "emerald", delay: 0.32 },
+    { value: 90, suffix: "%", label: "Precisión OCR en comprobantes con IA", icon: Lock, color: "emerald", delay: 0.32 },
     { value: 0, suffix: "$", label: "Costo oculto — sin comisiones por transacción", icon: FileCheck2, color: "amber", delay: 0.4 },
   ];
 

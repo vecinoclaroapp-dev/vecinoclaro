@@ -371,7 +371,7 @@ export function FeaturesSection({ onGetStarted, featuresRef }: Props) {
   const smallFeatures: SmallFeature[] = [
     {
       icon: ShieldCheck, title: "Comprobantes con IA Groq",
-      desc: "OCR + detección de fraude con Llama 3.2 90B Vision. 4 API keys con rotación.",
+      desc: "OCR + detección de fraude con Llama 3.2 90B Vision. Verificación automática de cada comprobante.",
       color: "emerald", visual: <MiniReceipt />,
     },
     {
