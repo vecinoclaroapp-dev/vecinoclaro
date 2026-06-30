@@ -4,8 +4,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLogin, useRegister } from "@/hooks/use-auth";
 import { googleOAuthEnabled } from "@/lib/oauth-config";
 import { toast } from "sonner";
@@ -22,6 +20,9 @@ import {
   Eye,
   EyeOff,
   ArrowLeft,
+  Building2,
+  Home,
+  KeyRound,
 } from "lucide-react";
 
 type Props = {
@@ -31,9 +32,10 @@ type Props = {
   registerRole?: "ADMIN" | "USER";
 };
 
-export function AuthScreen({ onAuthed, onBack, initialMode = "login", registerRole = "USER" }: Props) {
+export function AuthScreen({ onAuthed, onBack, initialMode = "login", registerRole: initialRole = "ADMIN" }: Props) {
   const [mode, setMode] = useState<"login" | "register">(initialMode);
   const [showPass, setShowPass] = useState(false);
+  const [registerRole, setRegisterRole] = useState<"ADMIN" | "USER">(initialRole);
   const login = useLogin();
   const register = useRegister();
 
@@ -41,6 +43,8 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login", registerRo
     name: "",
     email: "",
     password: "",
+    residenceLabel: "",
+    inviteCode: "",
   });
 
   const submit = async (e: React.FormEvent) => {
@@ -55,8 +59,35 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login", registerRo
           toast.error("Ingresa tu nombre completo");
           return;
         }
-        await register.mutateAsync({ ...form, role: registerRole });
-        toast.success("Cuenta creada. ¡Configuremos tu condominio!");
+        // Registro
+        await register.mutateAsync({
+          name: form.name,
+          email: form.email,
+          password: form.password,
+          role: registerRole,
+        });
+
+        if (registerRole === "USER") {
+          // Si es usuario, intentar vincular con código de invitación
+          if (form.inviteCode.trim()) {
+            try {
+              const r = await fetch("/api/residents/join", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code: form.inviteCode.trim().toUpperCase() }),
+              });
+              const j = await r.json();
+              if (!r.ok) throw new Error(j.error);
+              toast.success("Cuenta creada y vinculada a tu condominio");
+            } catch (e) {
+              toast.warning("Cuenta creada. No se pudo vincular el código: " + (e instanceof Error ? e.message : "Error"));
+            }
+          } else {
+            toast.success("Cuenta creada");
+          }
+        } else {
+          toast.success("Cuenta creada. ¡Configuremos tu condominio!");
+        }
         onAuthed();
       }
     } catch (e) {
@@ -70,20 +101,15 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login", registerRo
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
-      {/* Lado izquierdo: Brand + valor */}
+      {/* Lado izquierdo: Brand */}
       <div className="relative hidden lg:flex flex-col items-center justify-center p-12 bg-gradient-to-br from-emerald-700 via-emerald-800 to-emerald-900 text-white overflow-hidden">
         <div className="absolute inset-0 bg-grid opacity-20" />
         <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-amber-400/20 blur-3xl" />
         <div className="absolute -left-32 -bottom-32 h-96 w-96 rounded-full bg-emerald-400/20 blur-3xl" />
 
-        {/* Brand con logo real — centrado */}
         <div className="relative z-10 text-center">
           <div className="flex items-center justify-center gap-3 mb-8">
-            <img
-              src="/logo-vecinoclaro.png"
-              alt="VecinoClaro"
-              className="h-14 w-14 object-cover"
-            />
+            <img src="/logo-vecinoclaro.png" alt="VecinoClaro" className="h-14 w-14 object-contain" />
             <div className="text-left">
               <p className="font-bold text-xl leading-tight">VecinoClaro</p>
               <p className="text-xs text-amber-300 leading-tight tracking-wide font-semibold">
@@ -116,33 +142,24 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login", registerRo
           </div>
         </div>
 
-        {/* Degradado decorativo en el borde derecho (frontera verde→blanco) — más visible */}
+        {/* Degradado decorativo en el borde derecho */}
         <div className="absolute top-0 right-0 h-full w-32 bg-gradient-to-r from-transparent via-emerald-400/20 to-amber-400/30 pointer-events-none" />
       </div>
 
       {/* Lado derecho: Formulario */}
       <div className="flex items-center justify-center p-6 sm:p-12 bg-background relative">
-        {/* Degradado decorativo en el borde izquierdo (frontera blanco←verde) — más visible */}
         <div className="absolute top-0 left-0 h-full w-32 bg-gradient-to-l from-transparent via-emerald-100/60 to-emerald-300/40 dark:via-emerald-950/40 dark:to-emerald-800/30 pointer-events-none lg:block hidden" />
 
         <div className="w-full max-w-md relative z-10">
-          {/* Botón volver a landing */}
           {onBack && (
-            <button
-              onClick={onBack}
-              className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5 mb-5"
-            >
+            <button onClick={onBack} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5 mb-5">
               <ArrowLeft className="h-3.5 w-3.5" /> Volver al inicio
             </button>
           )}
 
-          {/* Mobile brand con logo */}
+          {/* Mobile brand */}
           <div className="lg:hidden flex items-center gap-3 mb-6 justify-center">
-            <img
-              src="/logo-vecinoclaro.png"
-              alt="VecinoClaro"
-              className="h-11 w-11 object-cover"
-            />
+            <img src="/logo-vecinoclaro.png" alt="VecinoClaro" className="h-11 w-11 object-contain" />
             <div>
               <p className="font-bold text-lg leading-tight">VecinoClaro</p>
               <p className="text-xs text-muted-foreground leading-tight tracking-wide">Cuentas Claras, Vecinos Claros</p>
@@ -160,13 +177,48 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login", registerRo
             </p>
           </div>
 
+          {/* Selector de rol (solo en modo registro) */}
+          {mode === "register" && (
+            <div className="mb-5">
+              <Label className="text-xs font-semibold mb-2 block">¿Cómo quieres usar VecinoClaro?</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRegisterRole("ADMIN")}
+                  className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all ${
+                    registerRole === "ADMIN"
+                      ? "border-amber-400 bg-amber-50 dark:bg-amber-950/20"
+                      : "border-border hover:border-muted-foreground/30"
+                  }`}
+                >
+                  <Building2 className={`h-5 w-5 ${registerRole === "ADMIN" ? "text-amber-600" : "text-muted-foreground"}`} />
+                  <div className="text-left">
+                    <p className="text-sm font-semibold">Condominio</p>
+                    <p className="text-[10px] text-muted-foreground">Administro un edificio</p>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRegisterRole("USER")}
+                  className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all ${
+                    registerRole === "USER"
+                      ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20"
+                      : "border-border hover:border-muted-foreground/30"
+                  }`}
+                >
+                  <Home className={`h-5 w-5 ${registerRole === "USER" ? "text-emerald-600" : "text-muted-foreground"}`} />
+                  <div className="text-left">
+                    <p className="text-sm font-semibold">Usuario</p>
+                    <p className="text-[10px] text-muted-foreground">Vivo en un condominio</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+
           {googleOAuthEnabled && (
             <>
-              <Button
-                variant="outline"
-                className="w-full mb-3 gap-2 h-11"
-                onClick={googleSignIn}
-              >
+              <Button variant="outline" className="w-full mb-3 gap-2 h-11" onClick={googleSignIn}>
                 <svg className="h-4 w-4" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -188,14 +240,7 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login", registerRo
                 <Label htmlFor="name">Nombre completo</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="name"
-                    className="pl-9 h-11"
-                    placeholder="Junta de Condominio"
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    required
-                  />
+                  <Input id="name" className="pl-9 h-11" placeholder="Junta de Condominio" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
                 </div>
               </div>
             )}
@@ -204,15 +249,7 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login", registerRo
               <Label htmlFor="email">Correo electrónico</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  className="pl-9 h-11"
-                  placeholder="admin@condominio.ve"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  required
-                />
+                <Input id="email" type="email" className="pl-9 h-11" placeholder="admin@condominio.ve" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
               </div>
             </div>
 
@@ -220,34 +257,37 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login", registerRo
               <Label htmlFor="pass">Contraseña</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="pass"
-                  type={showPass ? "text" : "password"}
-                  className="pl-9 pr-10 h-11"
-                  placeholder="••••••••"
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  required
-                  minLength={6}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  aria-label={showPass ? "Ocultar" : "Mostrar"}
-                >
+                <Input id="pass" type={showPass ? "text" : "password"} className="pl-9 pr-10 h-11" placeholder="••••••••" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} />
+                <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                   {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
               {mode === "register" && <p className="text-xs text-muted-foreground">Mínimo 6 caracteres</p>}
             </div>
 
-            <Button
-              type="submit"
-              className="w-full h-11 gap-1.5"
-              disabled={login.isPending || register.isPending}
-            >
-              {mode === "login" ? "Iniciar sesión" : "Crear cuenta"}
+            {/* Campos extra para Usuario: puerta + código de invitación */}
+            {mode === "register" && registerRole === "USER" && (
+              <>
+                <div className="space-y-1.5">
+                  <Label htmlFor="residence">Tu vivienda / Puerta</Label>
+                  <div className="relative">
+                    <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input id="residence" className="pl-9 h-11" placeholder="Ej: 3-A, PH, Casa 5" value={form.residenceLabel} onChange={(e) => setForm({ ...form, residenceLabel: e.target.value })} />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="code">Código de invitación</Label>
+                  <div className="relative">
+                    <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input id="code" className="pl-9 h-11 font-mono tracking-wider" placeholder="Ej: VEC-7K3M" value={form.inviteCode} onChange={(e) => setForm({ ...form, inviteCode: e.target.value.toUpperCase() })} />
+                  </div>
+                  <p className="text-xs text-muted-foreground">Pídeselo a tu administrador. Si no lo tienes, puedes omitirlo y vincularlo después.</p>
+                </div>
+              </>
+            )}
+
+            <Button type="submit" className="w-full h-11 gap-1.5" disabled={login.isPending || register.isPending}>
+              {mode === "login" ? "Iniciar sesión" : registerRole === "ADMIN" ? "Crear cuenta de condominio" : "Crear cuenta de usuario"}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </form>

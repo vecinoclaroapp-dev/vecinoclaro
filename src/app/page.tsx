@@ -41,7 +41,7 @@ import { SettingsView } from "@/components/dashboard/settings-view";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppStore } from "@/store/app-store";
 
-type GuestView = "landing" | "auth" | "register" | "role-selector" | "register-admin" | "register-user";
+type GuestView = "landing" | "auth" | "register";
 
 export default function Home() {
   const { data, isLoading, refetch } = useMe();
@@ -65,51 +65,27 @@ export default function Home() {
     );
   }
 
-  // 1) No autenticado → landing, role selector, o auth (según guestView)
+  // 1) No autenticado → landing o auth
   if (!data?.user) {
     if (guestView === "landing") {
       return (
         <LandingPage
-          onGetStarted={() => setGuestView("role-selector")}
+          onGetStarted={() => setGuestView("register")}
           onLogin={() => setGuestView("auth")}
         />
       );
     }
-
-    if (guestView === "role-selector") {
-      return (
-        <RoleSelectorScreen
-          onSelectAdmin={() => setGuestView("register-admin")}
-          onSelectUser={() => setGuestView("register-user")}
-          onBack={() => setGuestView("landing")}
-        />
-      );
-    }
-
-    // register-admin y register-user usan AuthScreen en modo register
-    if (guestView === "register-admin" || guestView === "register-user") {
-      return (
-        <AuthScreen
-          initialMode="register"
-          registerRole={guestView === "register-admin" ? "ADMIN" : "USER"}
-          onAuthed={() => setForceRefresh((n) => n + 1)}
-          onBack={() => setGuestView("role-selector")}
-        />
-      );
-    }
-
     return (
       <AuthScreen
-        initialMode="login"
+        initialMode={guestView === "register" ? "register" : "login"}
         onAuthed={() => setForceRefresh((n) => n + 1)}
         onBack={() => setGuestView("landing")}
       />
     );
   }
 
-  // 2) Autenticado
-  // ADMIN sin onboarding → wizard de configuracion de condominio
-  if (!data.user.onboardingDone && (data.user.role === "ADMIN" || data.user.role === "USER")) {
+  // 2) Autenticado, onboarding no completado → wizard
+  if (!data.user.onboardingDone) {
     return <OnboardingWizard onComplete={() => setForceRefresh((n) => n + 1)} />;
   }
 
