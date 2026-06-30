@@ -152,16 +152,21 @@ export function Sidebar() {
       >
         {/* Brand con logo real + eslogan */}
         <div className="flex items-center justify-between gap-3 px-5 h-16 border-b border-sidebar-border">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <img
-              src="/logo-vecinoclaro.png"
-              alt="VecinoClaro"
-              className="h-8 w-8 shrink-0"
-              style={{ objectFit: "contain" }}
-            />
-            <div className="flex flex-col">
-              <span className="font-bold text-sm leading-tight text-sidebar-foreground">VecinoClaro</span>
-              <span className="text-[10px] text-muted-foreground leading-tight font-medium">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="h-8 w-8 shrink-0 flex items-center justify-center">
+              <img
+                src="/logo-vecinoclaro.png"
+                alt="VecinoClaro"
+                className="h-8 w-8"
+                style={{ objectFit: "contain", maxWidth: "100%", maxHeight: "100%" }}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="font-bold text-sm leading-tight text-sidebar-foreground whitespace-nowrap">VecinoClaro</span>
+              <span className="text-[10px] text-muted-foreground leading-tight font-medium whitespace-nowrap">
                 Cuentas Claras, Vecinos Claros
               </span>
             </div>
