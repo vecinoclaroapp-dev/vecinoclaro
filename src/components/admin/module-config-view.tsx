@@ -39,7 +39,7 @@ type ModuleDef = {
 const MODULES: Omit<ModuleDef, "enabled">[] = [
   { key: "payments", name: "Pagos", description: "Registro y seguimiento de pagos bimonetarios", icon: CreditCard },
   { key: "announcements", name: "Avisos", description: "Comunicados y estado de morosos", icon: Megaphone },
-  { key: "polls", name: "Votaciones", description: "Votaciones con peso indiviso", icon: Vote },
+  { key: "polls", name: "Votaciones", description: "Votaciones por vecinos", icon: Vote },
   { key: "requests", name: "Solicitudes", description: "Help desk de residentes", icon: LifeBuoy },
   { key: "facilities", name: "Áreas comunes", description: "Reservas de instalaciones", icon: LayoutGrid, premium: true },
   { key: "calendar", name: "Calendario", description: "Eventos y reuniones", icon: Calendar },

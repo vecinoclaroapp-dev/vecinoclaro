@@ -77,7 +77,7 @@ export function ResidentPolls() {
     <div className="space-y-6">
       <PageHeader
         title="Votaciones"
-        subtitle="Tu voto vale 1 (peso indiviso por vivienda)"
+        subtitle="Tu voto vale 1 (1 vivienda = 1 voto)"
         icon={Vote}
       />
 

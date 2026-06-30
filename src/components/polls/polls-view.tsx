@@ -76,7 +76,7 @@ export function PollsView() {
     <div className="space-y-6">
       <PageHeader
         title="Votaciones"
-        subtitle="Votaciones con peso indiviso (1 vivienda = 1 voto)"
+        subtitle="Votaciones por vecinos (1 vivienda = 1 voto)"
         icon={Vote}
         actions={
           <Button className="gap-1.5">

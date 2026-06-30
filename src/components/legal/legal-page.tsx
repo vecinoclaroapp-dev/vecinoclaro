@@ -96,7 +96,7 @@ function TermsAndConditions() {
       <section>
         <h2 className="text-xl font-bold mb-3 text-emerald-700 dark:text-emerald-400">2. Descripción del Servicio</h2>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          VecinoClaro es una plataforma SaaS (Software as a Service) bimonetaria (USD/VES) diseñada para la gestión de condominios y residencias en Venezuela. La Plataforma ofrece herramientas para contabilidad bimonetaria, gestión de pagos, verificación de comprobantes con Inteligencia Artificial, libro contable inmutable con hash chain SHA-256, votaciones con peso por indiviso, comunicaciones internas, seguridad y administración de condominios.
+          VecinoClaro es una plataforma SaaS (Software as a Service) bimonetaria (USD/VES) diseñada para la gestión de condominios y residencias en Venezuela. La Plataforma ofrece herramientas para contabilidad bimonetaria, gestión de pagos, verificación de comprobantes con Inteligencia Artificial, libro contable inmutable con hash chain SHA-256, votaciones por vecinos, comunicaciones internas, seguridad y administración de condominios.
         </p>
         <p className="text-sm text-muted-foreground leading-relaxed mt-2">
           El servicio incluye una plataforma web para administradores y una aplicación móvil nativa para residentes. Ambas comparten la misma base de datos y APIs, pero ofrecen experiencias diferenciadas según el rol del usuario.
@@ -272,7 +272,7 @@ function UsageTerms() {
       <section>
         <h2 className="text-xl font-bold mb-3 text-emerald-700 dark:text-emerald-400">4. Votaciones y Decisiones Comunitarias</h2>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          Las votaciones realizadas a través de la Plataforma tienen peso por indiviso conforme a la Ley de Propiedad Horizontal de Venezuela. Cada voto vale según la alícuota de la vivienda del residente. Los resultados de las votaciones son vinculantes para el condominio en la medida que cumplan con los requisitos legales de quórum y mayoría establecidos en la Ley.
+          Las votaciones realizadas a través de la Plataforma tienen peso por vecinos conforme a la Ley de Propiedad Horizontal de Venezuela. Cada voto vale según la alícuota de la vivienda del residente. Los resultados de las votaciones son vinculantes para el condominio en la medida que cumplan con los requisitos legales de quórum y mayoría establecidos en la Ley.
         </p>
         <p className="text-sm text-muted-foreground leading-relaxed mt-2">
           VecinoClaro no garantiza que las votaciones realizadas en la Plataforma cumplan con todos los requisitos legales aplicables. Es responsabilidad del administrador verificar que el proceso de votación cumpla con la normativa vigente.

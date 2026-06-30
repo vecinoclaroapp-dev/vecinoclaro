@@ -133,7 +133,7 @@ const testimonials: Testimonial[] = [
   },
   {
     quote:
-      "Las votaciones por indiviso respetan la Ley de Propiedad Horizontal. Las asambleas ya no son un caos de manos levantadas.",
+      "Las votaciones por vecinos respetan la Ley de Propiedad Horizontal. Las asambleas ya no son un caos de manos levantadas.",
     name: "Ana Gómez",
     role: "Moderadora · Residencias El Ávila, Caracas",
     initials: "AG",

@@ -27,7 +27,7 @@ const VIEW_TITLES: Record<View, { title: string; subtitle: string }> = {
   budget: { title: "Presupuesto", subtitle: "Presupuestado vs. real" },
   funds: { title: "Fondos", subtitle: "Ordinario, reserva, extraordinario" },
   reports: { title: "Reportes", subtitle: "Estadísticas y exportación de datos" },
-  polls: { title: "Votaciones", subtitle: "Votaciones con peso por indiviso" },
+  polls: { title: "Votaciones", subtitle: "Votaciones por vecinos" },
   announcements: { title: "Avisos y Morosos", subtitle: "Cartelera digital y morosidad" },
   requests: { title: "Solicitudes", subtitle: "Help-desk de residentes" },
   facilities: { title: "Áreas Comunes", subtitle: "Reservas de instalaciones" },

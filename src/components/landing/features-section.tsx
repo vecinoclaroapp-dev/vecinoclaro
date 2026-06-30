@@ -390,7 +390,7 @@ export function FeaturesSection({ onGetStarted, featuresRef }: Props) {
       color: "sky", visual: <MiniUniqueCode />,
     },
     {
-      icon: Vote, title: "Votaciones por indiviso",
+      icon: Vote, title: "Votaciones por vecinos",
       desc: "Peso conforme a la Ley de Propiedad Horizontal de Venezuela.",
       color: "emerald", visual: <MiniVoting />,
     },

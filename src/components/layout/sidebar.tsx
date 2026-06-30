@@ -69,7 +69,7 @@ const NAV_SECTIONS: NavSection[] = [
     title: "Comunicación",
     items: [
       { view: "announcements", label: "Avisos y Morosos", icon: Megaphone, description: "Cartelera digital", module: "announcements" },
-      { view: "polls", label: "Votaciones", icon: Vote, description: "Por indiviso (Ley PH)", module: "polls" },
+      { view: "polls", label: "Votaciones", icon: Vote, description: "Por vecinos (Ley PH)", module: "polls" },
       { view: "requests", label: "Solicitudes", icon: LifeBuoy, description: "Help-desk de residentes", module: "requests" },
       { view: "messages", label: "Mensajes", icon: MessageSquare, description: "Chat interno", module: "messages" },
       { view: "calendar", label: "Calendario", icon: CalendarDays, description: "Eventos y asambleas", module: "calendar" },
