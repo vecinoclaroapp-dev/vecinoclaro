@@ -1,12 +1,9 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { Providers } from "@/components/providers";
-import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
-import { InstallPrompt } from "@/components/pwa/install-prompt";
-import { PushPermissionPrompt } from "@/components/pwa/push-permission-prompt";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,35 +29,6 @@ export const metadata: Metadata = {
     "gestión inmobiliaria",
   ],
   authors: [{ name: "VecinoClaro" }],
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "VecinoClaro",
-  },
-  icons: {
-    icon: [
-      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
-      { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
-      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
-    ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
-  },
-  formatDetection: {
-    telephone: false,
-    address: false,
-    email: false,
-  },
-};
-
-export const viewport: Viewport = {
-  themeColor: "#047857",
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -74,9 +42,6 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
         <Providers>{children}</Providers>
-        <ServiceWorkerRegister />
-        <InstallPrompt />
-        <PushPermissionPrompt />
         <Toaster />
         <SonnerToaster richColors position="top-right" />
       </body>
