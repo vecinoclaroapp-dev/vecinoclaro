@@ -170,13 +170,18 @@ export function CinematicFooter({ onGetStarted, onLogin }: FooterProps) {
 
           <div className="relative z-20 w-full pb-8 px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="text-muted-foreground text-[10px] md:text-xs font-semibold tracking-widest uppercase order-2 md:order-1">© 2026 VecinoClaro · Cuentas Claras, Vecinos Claros</div>
-            <div className="footer-glass-pill px-6 py-3 rounded-full flex items-center gap-2 order-1 md:order-2">
+            <div className="flex items-center gap-4 order-3 md:order-2">
+              <a href="/legal" className="text-muted-foreground text-[10px] md:text-xs hover:text-foreground transition-colors cursor-pointer">Términos y Condiciones</a>
+              <a href="/legal" className="text-muted-foreground text-[10px] md:text-xs hover:text-foreground transition-colors cursor-pointer">Privacidad</a>
+              <a href="/legal" className="text-muted-foreground text-[10px] md:text-xs hover:text-foreground transition-colors cursor-pointer">Términos de Uso</a>
+            </div>
+            <div className="footer-glass-pill px-6 py-3 rounded-full flex items-center gap-2 order-1 md:order-3">
               <span className="text-muted-foreground text-[10px] md:text-xs font-bold uppercase tracking-widest">Hecho con</span>
               <span className="animate-footer-heartbeat text-sm md:text-base text-destructive">❤</span>
               <span className="text-muted-foreground text-[10px] md:text-xs font-bold uppercase tracking-widest">en</span>
               <span className="text-foreground font-black text-xs md:text-sm ml-1">Venezuela</span>
             </div>
-            <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="footer-glass-pill w-12 h-12 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer order-3">
+            <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="footer-glass-pill w-12 h-12 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer order-4">
               <span className="text-xl">↑</span>
             </button>
           </div>
