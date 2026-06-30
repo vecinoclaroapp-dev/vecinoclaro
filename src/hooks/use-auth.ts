@@ -20,11 +20,11 @@ export function useMe() {
 export function useRegister() {
   const router = useRouter();
   return useMutation({
-    mutationFn: async (data: { name: string; email: string; password: string }) => {
+    mutationFn: async (data: { name: string; email: string; password: string; role?: string }) => {
       const r = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, role: data.role || "USER" }),
       });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || "Error al registrar");

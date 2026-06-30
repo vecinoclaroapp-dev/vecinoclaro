@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { useMe } from "@/hooks/use-auth";
 import { LandingPage } from "@/components/landing/landing-page";
 import { AuthScreen } from "@/components/auth/auth-screen";
+import { RoleSelectorScreen } from "@/components/auth/role-selector-screen";
 import { OnboardingWizard } from "@/components/onboarding/onboarding-wizard";
+import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { DashboardView } from "@/components/dashboard/dashboard-view";
@@ -39,7 +41,7 @@ import { SettingsView } from "@/components/dashboard/settings-view";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppStore } from "@/store/app-store";
 
-type GuestView = "landing" | "auth" | "register";
+type GuestView = "landing" | "auth" | "register" | "role-selector" | "register-admin" | "register-user";
 
 export default function Home() {
   const { data, isLoading, refetch } = useMe();
@@ -63,19 +65,42 @@ export default function Home() {
     );
   }
 
-  // 1) No autenticado → landing o auth (según guestView)
+  // 1) No autenticado → landing, role selector, o auth (según guestView)
   if (!data?.user) {
     if (guestView === "landing") {
       return (
         <LandingPage
-          onGetStarted={() => setGuestView("register")}
+          onGetStarted={() => setGuestView("role-selector")}
           onLogin={() => setGuestView("auth")}
         />
       );
     }
+
+    if (guestView === "role-selector") {
+      return (
+        <RoleSelectorScreen
+          onSelectAdmin={() => setGuestView("register-admin")}
+          onSelectUser={() => setGuestView("register-user")}
+          onBack={() => setGuestView("landing")}
+        />
+      );
+    }
+
+    // register-admin y register-user usan AuthScreen en modo register
+    if (guestView === "register-admin" || guestView === "register-user") {
+      return (
+        <AuthScreen
+          initialMode="register"
+          registerRole={guestView === "register-admin" ? "ADMIN" : "USER"}
+          onAuthed={() => setForceRefresh((n) => n + 1)}
+          onBack={() => setGuestView("role-selector")}
+        />
+      );
+    }
+
     return (
       <AuthScreen
-        initialMode={guestView === "register" ? "register" : "login"}
+        initialMode="login"
         onAuthed={() => setForceRefresh((n) => n + 1)}
         onBack={() => setGuestView("landing")}
       />
@@ -83,23 +108,32 @@ export default function Home() {
   }
 
   // 2) Autenticado pero onboarding no completado
-  // Si es USER (registrado via web, sin rol admin asignado), mostrar pantalla de espera
+  // Si es USER (residente), mostrar pantalla de bienvenida
   if (!data.user.onboardingDone && data.user.role === "USER") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-6">
-        <div className="max-w-md text-center space-y-4">
-          <img src="/logo-vecinoclaro.png" alt="VecinoClaro" className="h-16 w-16 mx-auto object-contain" />
-          <h1 className="text-2xl font-bold">Cuenta creada</h1>
-          <p className="text-sm text-muted-foreground">
-            Tu cuenta está lista. Para empezar a usar VecinoClaro, un administrador de condominio debe invitarte.
-            Si eres administrador, cierra sesión y vuelve a registrarte — el sistema te guiará por la configuración.
-          </p>
-          <button
-            onClick={() => setForceRefresh((n) => n + 1)}
-            className="text-sm text-emerald-600 hover:underline"
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-amber-50/50 dark:from-emerald-950/20 dark:to-amber-950/10 p-6">
+        <div className="max-w-md text-center space-y-6">
+          <img src="/logo-vecinoclaro.png" alt="VecinoClaro" className="h-20 w-20 mx-auto object-contain" />
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">¡Bienvenido a VecinoClaro!</h1>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Tu cuenta está lista. Para empezar, necesitas que el administrador de tu condominio te invite con un código de vinculación.
+            </p>
+          </div>
+          <div className="rounded-xl border border-sky-200 dark:border-sky-900/50 bg-sky-50/50 dark:bg-sky-950/20 p-4 text-left">
+            <p className="text-xs text-sky-700 dark:text-sky-400 font-semibold mb-1">¿Qué hacer ahora?</p>
+            <p className="text-xs text-muted-foreground">
+              1. Pídele a tu administrador el código de tu vivienda<br/>
+              2. Cierra sesión y vuelve a entrar con ese código<br/>
+              3. ¡Listo! Podrás ver tus facturas y hacer pagos
+            </p>
+          </div>
+          <Button
+            onClick={() => setGuestView("landing")}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-8"
           >
             Volver al inicio
-          </button>
+          </Button>
         </div>
       </div>
     );

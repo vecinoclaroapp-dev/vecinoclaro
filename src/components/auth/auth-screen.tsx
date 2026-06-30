@@ -28,9 +28,10 @@ type Props = {
   onAuthed: () => void;
   onBack?: () => void;
   initialMode?: "login" | "register";
+  registerRole?: "ADMIN" | "USER";
 };
 
-export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
+export function AuthScreen({ onAuthed, onBack, initialMode = "login", registerRole = "USER" }: Props) {
   const [mode, setMode] = useState<"login" | "register">(initialMode);
   const [showPass, setShowPass] = useState(false);
   const login = useLogin();
@@ -54,7 +55,7 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
           toast.error("Ingresa tu nombre completo");
           return;
         }
-        await register.mutateAsync(form);
+        await register.mutateAsync({ ...form, role: registerRole });
         toast.success("Cuenta creada. ¡Configuremos tu condominio!");
         onAuthed();
       }

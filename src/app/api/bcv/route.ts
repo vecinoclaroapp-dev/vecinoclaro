@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rateLimit, rateLimitResponse, getClientIP } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { fetchBcvRate, saveBcvRate, getLatestRate, dayOnly } from "@/lib/bcv";
 import { getUserContext } from "@/lib/api-context";
@@ -21,6 +22,9 @@ export async function GET() {
 
 // POST /api/bcv/sync — sincronizar con DolarApi.com (o guardar tasa manual)
 export async function POST(request: Request) {
+  const ip = getClientIP(request);
+  const rl = rateLimit(ip, "/api/bcv");
+  if (!rl.allowed) return rateLimitResponse();
   const { user, membership } = await getUserContext();
   if (!user) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
   if (membership?.role !== "ADMIN") {

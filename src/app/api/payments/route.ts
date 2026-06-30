@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rateLimit, rateLimitResponse, getClientIP } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { getUserContext, unauthorized, noCondominium } from "@/lib/api-context";
 import { getRateForDate } from "@/lib/bcv";
@@ -60,6 +61,9 @@ export async function GET(request: Request) {
 
 // POST /api/payments
 export async function POST(request: Request) {
+  const ip = getClientIP(request);
+  const rl = rateLimit(ip, "/api/payments");
+  if (!rl.allowed) return rateLimitResponse();
   const { user, condominium } = await getUserContext();
   if (!user) return unauthorized();
   if (!condominium) return noCondominium();
