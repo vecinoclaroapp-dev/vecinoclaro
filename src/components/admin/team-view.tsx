@@ -86,7 +86,7 @@ export function TeamView() {
 
   const members = data ?? [];
   const initials = (name: string) =>
-    name.split(" ").filter(Boolean).map((s) => s[0] || "").slice(0, 2).join("").toUpperCase() || "?"};
+    name.split(" ").filter(Boolean).map((s) => s[0] || "").slice(0, 2).join("").toUpperCase() || "?";
 
   return (
     <div className="space-y-6">
