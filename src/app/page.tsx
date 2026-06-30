@@ -5,8 +5,8 @@ import { useMe } from "@/hooks/use-auth";
 import { LandingPage } from "@/components/landing/landing-page";
 import { AuthScreen } from "@/components/auth/auth-screen";
 import { RoleSelectorScreen } from "@/components/auth/role-selector-screen";
-import { ResidentJoinScreen } from "@/components/auth/resident-join-screen";
-import { OnboardingWizard } from "@/components/onboarding/onboarding-wizard";
+import { AdminOnboarding } from "@/components/onboarding/admin-onboarding";
+import { UserOnboarding } from "@/components/onboarding/user-onboarding";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
@@ -42,7 +42,7 @@ import { SettingsView } from "@/components/dashboard/settings-view";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppStore } from "@/store/app-store";
 
-type GuestView = "landing" | "auth" | "role-selector" | "register-admin" | "resident-join";
+type GuestView = "landing" | "auth" | "role-selector" | "register" | "admin-onboarding" | "user-onboarding";
 
 export default function Home() {
   const { data, isLoading, refetch } = useMe();
@@ -71,42 +71,42 @@ export default function Home() {
     if (guestView === "landing") {
       return (
         <LandingPage
-          onGetStarted={() => setGuestView("role-selector")}
+          onGetStarted={() => setGuestView("register")}
           onLogin={() => setGuestView("auth")}
         />
       );
     }
 
-    // Selector de rol PRIMERO: "¿Tú quién eres?"
-    if (guestView === "role-selector") {
+    // Registro base: nombre, email, password
+    if (guestView === "register") {
       return (
-        <RoleSelectorScreen
-          onSelectAdmin={() => setGuestView("register-admin")}
-          onSelectUser={() => setGuestView("resident-join")}
+        <AuthScreen
+          initialMode="register"
+          onAuthed={() => setGuestView("role-selector")}
           onBack={() => setGuestView("landing")}
         />
       );
     }
 
-    // Condominio: AuthScreen registro → OnboardingWizard (ubicación, RIF, viviendas, BCV)
-    if (guestView === "register-admin") {
+    // Selector de rol: "¿Tú quién eres?"
+    if (guestView === "role-selector") {
       return (
-        <AuthScreen
-          initialMode="register"
-          onAuthed={() => setForceRefresh((n) => n + 1)}
-          onBack={() => setGuestView("role-selector")}
+        <RoleSelectorScreen
+          onSelectAdmin={() => setGuestView("admin-onboarding")}
+          onSelectUser={() => setGuestView("user-onboarding")}
+          onBack={() => setGuestView("register")}
         />
       );
     }
 
-    // Usuario: ResidentJoinScreen (código + puerta + cuenta → vinculación)
-    if (guestView === "resident-join") {
-      return (
-        <ResidentJoinScreen
-          onAuthed={() => setForceRefresh((n) => n + 1)}
-          onBack={() => setGuestView("role-selector")}
-        />
-      );
+    // Condominio: nombre residencia, RIF, dirección, teléfonos, presidente, cédula, mensualidad, # aptos
+    if (guestView === "admin-onboarding") {
+      return <AdminOnboarding onComplete={() => setForceRefresh((n) => n + 1)} />;
+    }
+
+    // Usuario: código invitación, puerta, color, cédula, teléfono, # habitantes → cuenta → loading
+    if (guestView === "user-onboarding") {
+      return <UserOnboarding onAuthed={() => setForceRefresh((n) => n + 1)} onBack={() => setGuestView("role-selector")} />;
     }
 
     // Login
@@ -121,7 +121,7 @@ export default function Home() {
 
   // 2) ADMIN sin onboarding → wizard (ubicación, RIF, viviendas, BCV)
   if (!data.user.onboardingDone && data.user.role === "ADMIN") {
-    return <OnboardingWizard onComplete={() => setForceRefresh((n) => n + 1)} />;
+    return <AdminOnboarding onComplete={() => setForceRefresh((n) => n + 1)} />;
   }
 
   // 3) Autenticado + onboarding completo → app desktop

@@ -9,17 +9,7 @@ import { googleOAuthEnabled } from "@/lib/oauth-config";
 import { toast } from "sonner";
 import { signIn } from "next-auth/react";
 import {
-  Wallet,
-  ShieldCheck,
-  Zap,
-  TrendingUp,
-  ArrowRight,
-  Lock,
-  Mail,
-  User,
-  Eye,
-  EyeOff,
-  ArrowLeft,
+  Wallet, ShieldCheck, Zap, TrendingUp, ArrowRight, Lock, Mail, User, Eye, EyeOff, ArrowLeft,
 } from "lucide-react";
 
 type Props = {
@@ -34,11 +24,7 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
   const login = useLogin();
   const register = useRegister();
 
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,12 +34,8 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
         toast.success("Bienvenido de vuelta");
         onAuthed();
       } else {
-        if (form.name.trim().length < 2) {
-          toast.error("Ingresa tu nombre completo");
-          return;
-        }
+        if (form.name.trim().length < 2) { toast.error("Ingresa tu nombre completo"); return; }
         await register.mutateAsync(form);
-        // No hacemos toast aquí, dejamos que onAuthed lleve al role-selector
         onAuthed();
       }
     } catch (e) {
@@ -61,36 +43,27 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
     }
   };
 
-  const googleSignIn = () => {
-    signIn("google", { callbackUrl: "/" });
-  };
-
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
-      {/* Lado izquierdo: Brand */}
+      {/* Lado izquierdo */}
       <div className="relative hidden lg:flex flex-col items-center justify-center p-12 bg-gradient-to-br from-emerald-700 via-emerald-800 to-emerald-900 text-white overflow-hidden">
         <div className="absolute inset-0 bg-grid opacity-20" />
         <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-amber-400/20 blur-3xl" />
         <div className="absolute -left-32 -bottom-32 h-96 w-96 rounded-full bg-emerald-400/20 blur-3xl" />
-
         <div className="relative z-10 text-center">
           <div className="flex items-center justify-center gap-3 mb-8">
             <img src="/logo-vecinoclaro.png" alt="VecinoClaro" className="h-14 w-14 object-contain" />
             <div className="text-left">
               <p className="font-bold text-xl leading-tight">VecinoClaro</p>
-              <p className="text-xs text-amber-300 leading-tight tracking-wide font-semibold">
-                Cuentas Claras, Vecinos Claros
-              </p>
+              <p className="text-xs text-amber-300 leading-tight tracking-wide font-semibold">Cuentas Claras, Vecinos Claros</p>
             </div>
           </div>
-
           <h1 className="text-4xl xl:text-5xl font-bold leading-tight mb-4">
             Administra tu condominio en <span className="text-amber-300">dólares</span> y <span className="text-amber-300">bolívares</span>, sin caos.
           </h1>
           <p className="text-emerald-100 text-lg leading-relaxed max-w-md mx-auto">
             La plataforma hecha para la realidad venezolana. Tasa BCV automática, pago móvil, Zelle y libro contable inmutable.
           </p>
-
           <div className="grid grid-cols-2 gap-3 max-w-md mx-auto mt-8">
             {[
               { icon: Wallet, label: "Contabilidad USD/VES" },
@@ -107,21 +80,18 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
             ))}
           </div>
         </div>
-
         <div className="absolute top-0 right-0 h-full w-32 bg-gradient-to-r from-transparent via-emerald-400/20 to-amber-400/30 pointer-events-none" />
       </div>
 
-      {/* Lado derecho: Formulario */}
+      {/* Lado derecho */}
       <div className="flex items-center justify-center p-6 sm:p-12 bg-background relative">
         <div className="absolute top-0 left-0 h-full w-32 bg-gradient-to-l from-transparent via-emerald-100/60 to-emerald-300/40 dark:via-emerald-950/40 dark:to-emerald-800/30 pointer-events-none lg:block hidden" />
-
         <div className="w-full max-w-md relative z-10">
           {onBack && (
             <button onClick={onBack} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5 mb-5">
               <ArrowLeft className="h-3.5 w-3.5" /> Volver al inicio
             </button>
           )}
-
           <div className="lg:hidden flex items-center gap-3 mb-6 justify-center">
             <img src="/logo-vecinoclaro.png" alt="VecinoClaro" className="h-11 w-11 object-contain" />
             <div>
@@ -129,21 +99,15 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
               <p className="text-xs text-muted-foreground leading-tight tracking-wide">Cuentas Claras, Vecinos Claros</p>
             </div>
           </div>
-
           <div className="mb-6">
-            <h2 className="text-2xl font-bold">
-              {mode === "login" ? "Inicia sesión" : "Crea tu cuenta"}
-            </h2>
+            <h2 className="text-2xl font-bold">{mode === "login" ? "Inicia sesión" : "Crea tu cuenta"}</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              {mode === "login"
-                ? "Accede a la administración de tu condominio."
-                : "Regístrate para empezar a usar VecinoClaro."}
+              {mode === "login" ? "Accede a la administración de tu condominio." : "Regístrate para empezar a usar VecinoClaro."}
             </p>
           </div>
-
           {googleOAuthEnabled && (
             <>
-              <Button variant="outline" className="w-full mb-3 gap-2 h-11" onClick={googleSignIn}>
+              <Button variant="outline" className="w-full mb-3 gap-2 h-11" onClick={() => signIn("google", { callbackUrl: "/" })}>
                 <svg className="h-4 w-4" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -158,7 +122,6 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
               </div>
             </>
           )}
-
           <form onSubmit={submit} className="space-y-4">
             {mode === "register" && (
               <div className="space-y-1.5">
@@ -169,7 +132,6 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
                 </div>
               </div>
             )}
-
             <div className="space-y-1.5">
               <Label htmlFor="email">Correo electrónico</Label>
               <div className="relative">
@@ -177,7 +139,6 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
                 <Input id="email" type="email" className="pl-9 h-11" placeholder="admin@condominio.ve" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
               </div>
             </div>
-
             <div className="space-y-1.5">
               <Label htmlFor="pass">Contraseña</Label>
               <div className="relative">
@@ -189,28 +150,16 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
               </div>
               {mode === "register" && <p className="text-xs text-muted-foreground">Mínimo 6 caracteres</p>}
             </div>
-
             <Button type="submit" className="w-full h-11 gap-1.5" disabled={login.isPending || register.isPending}>
               {mode === "login" ? "Iniciar sesión" : "Crear cuenta"}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </form>
-
           <div className="text-center mt-4 text-sm text-muted-foreground">
             {mode === "login" ? (
-              <>
-                ¿No tienes cuenta?{" "}
-                <button onClick={() => setMode("register")} className="font-semibold text-emerald-700 dark:text-emerald-400 hover:underline">
-                  Regístrate gratis
-                </button>
-              </>
+              <>¿No tienes cuenta? <button onClick={() => setMode("register")} className="font-semibold text-emerald-700 dark:text-emerald-400 hover:underline">Regístrate gratis</button></>
             ) : (
-              <>
-                ¿Ya tienes cuenta?{" "}
-                <button onClick={() => setMode("login")} className="font-semibold text-emerald-700 dark:text-emerald-400 hover:underline">
-                  Inicia sesión
-                </button>
-              </>
+              <>¿Ya tienes cuenta? <button onClick={() => setMode("login")} className="font-semibold text-emerald-700 dark:text-emerald-400 hover:underline">Inicia sesión</button></>
             )}
           </div>
         </div>
