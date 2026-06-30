@@ -172,8 +172,10 @@ export function DocumentsView() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <Button variant="ghost" size="icon" title="Ver">
-                      <Eye className="h-4 w-4" />
+                    <Button variant="ghost" size="icon" title="Ver" asChild>
+                      <a href={doc.url ?? "#"} target="_blank" rel="noopener noreferrer">
+                        <Eye className="h-4 w-4" />
+                      </a>
                     </Button>
                     <Button variant="ghost" size="icon" title="Descargar" asChild>
                       <a href={doc.url ?? "#"} download>

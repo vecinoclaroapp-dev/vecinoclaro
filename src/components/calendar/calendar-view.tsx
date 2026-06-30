@@ -148,18 +148,6 @@ export function CalendarView() {
             </div>
           </CardContent>
         </Card>
-      ) : events.length === 0 ? (
-        <Card>
-          <CardContent className="p-0">
-            <EmptyState
-              icon={CalIcon}
-              title="No hay eventos este mes"
-              description="Crea reuniones, mantenimientos o eventos del condominio."
-              actionLabel="Nuevo evento"
-              onAction={() => setOpen(true)}
-            />
-          </CardContent>
-        </Card>
       ) : (
         <Card>
           <CardHeader>
