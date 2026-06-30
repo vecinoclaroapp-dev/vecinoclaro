@@ -82,6 +82,7 @@ export async function POST(request: Request) {
         ownerEmail: body.ownerEmail?.trim() || null,
         residentName: body.residentName?.trim() || null,
         residentPhone: body.residentPhone?.trim() || null,
+        joinCode: crypto.randomBytes(4).toString("hex").toUpperCase(),
         active: body.active !== false,
       },
     });

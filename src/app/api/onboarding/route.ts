@@ -80,6 +80,7 @@ export async function POST(request: Request) {
               ownerName: r.ownerName?.trim() || null,
               ownerPhone: r.ownerPhone?.trim() || null,
               ownerEmail: r.ownerEmail?.trim() || null,
+              joinCode: crypto.randomBytes(4).toString("hex").toUpperCase(),
               active: true,
             },
           });
