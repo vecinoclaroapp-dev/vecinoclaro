@@ -20,22 +20,17 @@ import {
   Eye,
   EyeOff,
   ArrowLeft,
-  Building2,
-  Home,
-  KeyRound,
 } from "lucide-react";
 
 type Props = {
   onAuthed: () => void;
   onBack?: () => void;
   initialMode?: "login" | "register";
-  registerRole?: "ADMIN" | "USER";
 };
 
-export function AuthScreen({ onAuthed, onBack, initialMode = "login", registerRole: initialRole = "ADMIN" }: Props) {
+export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
   const [mode, setMode] = useState<"login" | "register">(initialMode);
   const [showPass, setShowPass] = useState(false);
-  const [registerRole, setRegisterRole] = useState<"ADMIN" | "USER">(initialRole);
   const login = useLogin();
   const register = useRegister();
 
@@ -43,8 +38,6 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login", registerRo
     name: "",
     email: "",
     password: "",
-    residenceLabel: "",
-    inviteCode: "",
   });
 
   const submit = async (e: React.FormEvent) => {
@@ -59,35 +52,8 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login", registerRo
           toast.error("Ingresa tu nombre completo");
           return;
         }
-        // Registro
-        await register.mutateAsync({
-          name: form.name,
-          email: form.email,
-          password: form.password,
-          role: registerRole,
-        });
-
-        if (registerRole === "USER") {
-          // Si es usuario, intentar vincular con código de invitación
-          if (form.inviteCode.trim()) {
-            try {
-              const r = await fetch("/api/residents/join", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ code: form.inviteCode.trim().toUpperCase() }),
-              });
-              const j = await r.json();
-              if (!r.ok) throw new Error(j.error);
-              toast.success("Cuenta creada y vinculada a tu condominio");
-            } catch (e) {
-              toast.warning("Cuenta creada. No se pudo vincular el código: " + (e instanceof Error ? e.message : "Error"));
-            }
-          } else {
-            toast.success("Cuenta creada");
-          }
-        } else {
-          toast.success("Cuenta creada. ¡Configuremos tu condominio!");
-        }
+        await register.mutateAsync(form);
+        // No hacemos toast aquí, dejamos que onAuthed lleve al role-selector
         onAuthed();
       }
     } catch (e) {
@@ -142,7 +108,6 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login", registerRo
           </div>
         </div>
 
-        {/* Degradado decorativo en el borde derecho */}
         <div className="absolute top-0 right-0 h-full w-32 bg-gradient-to-r from-transparent via-emerald-400/20 to-amber-400/30 pointer-events-none" />
       </div>
 
@@ -157,7 +122,6 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login", registerRo
             </button>
           )}
 
-          {/* Mobile brand */}
           <div className="lg:hidden flex items-center gap-3 mb-6 justify-center">
             <img src="/logo-vecinoclaro.png" alt="VecinoClaro" className="h-11 w-11 object-contain" />
             <div>
@@ -173,48 +137,9 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login", registerRo
             <p className="text-sm text-muted-foreground mt-1">
               {mode === "login"
                 ? "Accede a la administración de tu condominio."
-                : "Empieza gratis. Sin tarjeta de crédito."}
+                : "Regístrate para empezar a usar VecinoClaro."}
             </p>
           </div>
-
-          {/* Selector de rol (solo en modo registro) */}
-          {mode === "register" && (
-            <div className="mb-5">
-              <Label className="text-xs font-semibold mb-2 block">¿Cómo quieres usar VecinoClaro?</Label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setRegisterRole("ADMIN")}
-                  className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all ${
-                    registerRole === "ADMIN"
-                      ? "border-amber-400 bg-amber-50 dark:bg-amber-950/20"
-                      : "border-border hover:border-muted-foreground/30"
-                  }`}
-                >
-                  <Building2 className={`h-5 w-5 ${registerRole === "ADMIN" ? "text-amber-600" : "text-muted-foreground"}`} />
-                  <div className="text-left">
-                    <p className="text-sm font-semibold">Condominio</p>
-                    <p className="text-[10px] text-muted-foreground">Administro un edificio</p>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRegisterRole("USER")}
-                  className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all ${
-                    registerRole === "USER"
-                      ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20"
-                      : "border-border hover:border-muted-foreground/30"
-                  }`}
-                >
-                  <Home className={`h-5 w-5 ${registerRole === "USER" ? "text-emerald-600" : "text-muted-foreground"}`} />
-                  <div className="text-left">
-                    <p className="text-sm font-semibold">Usuario</p>
-                    <p className="text-[10px] text-muted-foreground">Vivo en un condominio</p>
-                  </div>
-                </button>
-              </div>
-            </div>
-          )}
 
           {googleOAuthEnabled && (
             <>
@@ -265,29 +190,8 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login", registerRo
               {mode === "register" && <p className="text-xs text-muted-foreground">Mínimo 6 caracteres</p>}
             </div>
 
-            {/* Campos extra para Usuario: puerta + código de invitación */}
-            {mode === "register" && registerRole === "USER" && (
-              <>
-                <div className="space-y-1.5">
-                  <Label htmlFor="residence">Tu vivienda / Puerta</Label>
-                  <div className="relative">
-                    <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input id="residence" className="pl-9 h-11" placeholder="Ej: 3-A, PH, Casa 5" value={form.residenceLabel} onChange={(e) => setForm({ ...form, residenceLabel: e.target.value })} />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="code">Código de invitación</Label>
-                  <div className="relative">
-                    <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input id="code" className="pl-9 h-11 font-mono tracking-wider" placeholder="Ej: VEC-7K3M" value={form.inviteCode} onChange={(e) => setForm({ ...form, inviteCode: e.target.value.toUpperCase() })} />
-                  </div>
-                  <p className="text-xs text-muted-foreground">Pídeselo a tu administrador. Si no lo tienes, puedes omitirlo y vincularlo después.</p>
-                </div>
-              </>
-            )}
-
             <Button type="submit" className="w-full h-11 gap-1.5" disabled={login.isPending || register.isPending}>
-              {mode === "login" ? "Iniciar sesión" : registerRole === "ADMIN" ? "Crear cuenta de condominio" : "Crear cuenta de usuario"}
+              {mode === "login" ? "Iniciar sesión" : "Crear cuenta"}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </form>

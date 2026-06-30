@@ -33,7 +33,7 @@ export function RoleSelectorScreen({ onSelectAdmin, onSelectUser, onBack }: Prop
         {/* Título */}
         <div className="text-center mb-10">
           <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">
-            ¿Cómo quieres usar VecinoClaro?
+            ¿Tú quién eres?
           </h1>
           <p className="text-emerald-100/80 text-sm sm:text-base">
             Selecciona tu rol para personalizar tu experiencia
@@ -56,9 +56,9 @@ export function RoleSelectorScreen({ onSelectAdmin, onSelectUser, onBack }: Prop
               <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <Building2 className="h-7 w-7 text-emerald-950" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Soy Administrador</h3>
+              <h3 className="text-xl font-bold text-white mb-2">Soy Condominio</h3>
               <p className="text-sm text-emerald-100/70 leading-relaxed mb-4">
-                Gestiono un condominio. Quiero registrar pagos, ver morosos, generar facturas, administrar viviendas y usar todas las herramientas de gestión.
+                Gestiono un condominio. Quiero registrar pagos, ver morosos, generar facturas y administrar viviendas.
               </p>
               <div className="flex items-center gap-1.5 text-amber-300 text-sm font-semibold">
                 Configurar condominio
@@ -83,7 +83,7 @@ export function RoleSelectorScreen({ onSelectAdmin, onSelectUser, onBack }: Prop
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Soy Usuario</h3>
               <p className="text-sm text-emerald-100/70 leading-relaxed mb-4">
-                Vivo en un condominio que ya usa VecinoClaro. Quiero ver mis facturas, hacer pagos, subir comprobantes y estar informado.
+                Vivo en un condominio que ya usa VecinoClaro. Quiero ver mis facturas, hacer pagos y subir comprobantes.
               </p>
               <div className="flex items-center gap-1.5 text-emerald-300 text-sm font-semibold">
                 Unirme a mi condominio

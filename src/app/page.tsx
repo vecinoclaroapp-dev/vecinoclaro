@@ -5,6 +5,7 @@ import { useMe } from "@/hooks/use-auth";
 import { LandingPage } from "@/components/landing/landing-page";
 import { AuthScreen } from "@/components/auth/auth-screen";
 import { RoleSelectorScreen } from "@/components/auth/role-selector-screen";
+import { ResidentJoinScreen } from "@/components/auth/resident-join-screen";
 import { OnboardingWizard } from "@/components/onboarding/onboarding-wizard";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -41,7 +42,7 @@ import { SettingsView } from "@/components/dashboard/settings-view";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppStore } from "@/store/app-store";
 
-type GuestView = "landing" | "auth" | "register";
+type GuestView = "landing" | "auth" | "register" | "role-selector" | "resident-join";
 
 export default function Home() {
   const { data, isLoading, refetch } = useMe();
@@ -65,7 +66,7 @@ export default function Home() {
     );
   }
 
-  // 1) No autenticado → landing o auth
+  // 1) No autenticado
   if (!data?.user) {
     if (guestView === "landing") {
       return (
@@ -75,17 +76,51 @@ export default function Home() {
         />
       );
     }
+
+    // Registro: formulario base (nombre, email, password)
+    if (guestView === "register") {
+      return (
+        <AuthScreen
+          initialMode="register"
+          onAuthed={() => setGuestView("role-selector")}
+          onBack={() => setGuestView("landing")}
+        />
+      );
+    }
+
+    // Selector de rol: "¿Tú quién eres? Soy Usuario / Soy Condominio"
+    if (guestView === "role-selector") {
+      return (
+        <RoleSelectorScreen
+          onSelectAdmin={() => setForceRefresh((n) => n + 1)}
+          onSelectUser={() => setGuestView("resident-join")}
+          onBack={() => setGuestView("register")}
+        />
+      );
+    }
+
+    // Usuario: proceso de residente (código + puerta + cuenta)
+    if (guestView === "resident-join") {
+      return (
+        <ResidentJoinScreen
+          onAuthed={() => setForceRefresh((n) => n + 1)}
+          onBack={() => setGuestView("role-selector")}
+        />
+      );
+    }
+
+    // Login
     return (
       <AuthScreen
-        initialMode={guestView === "register" ? "register" : "login"}
+        initialMode="login"
         onAuthed={() => setForceRefresh((n) => n + 1)}
         onBack={() => setGuestView("landing")}
       />
     );
   }
 
-  // 2) Autenticado, onboarding no completado → wizard
-  if (!data.user.onboardingDone) {
+  // 2) Autenticado, onboarding no completado → wizard (solo ADMIN)
+  if (!data.user.onboardingDone && data.user.role === "ADMIN") {
     return <OnboardingWizard onComplete={() => setForceRefresh((n) => n + 1)} />;
   }
 
