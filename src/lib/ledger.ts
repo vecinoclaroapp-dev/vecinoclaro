@@ -25,7 +25,6 @@ export type LedgerInput = {
 };
 
 function buildPayload(prevHash: string | null, data: LedgerInput): string {
-  // Orden determinístico para evitar colisiones
   return JSON.stringify({
     prevHash: prevHash ?? "",
     type: data.type,
@@ -47,40 +46,44 @@ function computeHash(prevHash: string | null, data: LedgerInput): string {
   return createHash("sha256").update(buildPayload(prevHash, data)).digest("hex");
 }
 
-// Crea un asiento contable inmutable encadenado al último
+// Crea un asiento contable inmutable encadenado al ultimo
+// USA TRANSACCION para prevenir race condition en el hash chain
 export async function appendLedgerEntry(data: LedgerInput) {
-  const last = await db.accountEntry.findFirst({
-    orderBy: { createdAt: "desc" },
-    select: { hash: true },
+  return db.$transaction(async (tx) => {
+    // Dentro de la transaccion, obtener el ultimo hash
+    const last = await tx.accountEntry.findFirst({
+      orderBy: { createdAt: "desc" },
+      select: { hash: true },
+    });
+
+    const prevHash = last?.hash ?? null;
+    const hash = computeHash(prevHash, data);
+
+    const entry = await tx.accountEntry.create({
+      data: {
+        residenceId: data.residenceId,
+        type: data.type,
+        amountUSD: data.amountUSD,
+        amountVES: data.amountVES,
+        bcvRateId: data.bcvRateId,
+        concept: data.concept,
+        category: data.category,
+        reference: data.reference ?? null,
+        date: data.date,
+        hash,
+        prevHash,
+        paymentId: data.paymentId ?? null,
+        invoiceId: data.invoiceId ?? null,
+        serviceChargeId: data.serviceChargeId ?? null,
+      },
+      include: { bcvRate: true, residence: true },
+    });
+
+    return entry;
   });
-
-  const prevHash = last?.hash ?? null;
-  const hash = computeHash(prevHash, data);
-
-  const entry = await db.accountEntry.create({
-    data: {
-      residenceId: data.residenceId,
-      type: data.type,
-      amountUSD: data.amountUSD,
-      amountVES: data.amountVES,
-      bcvRateId: data.bcvRateId,
-      concept: data.concept,
-      category: data.category,
-      reference: data.reference ?? null,
-      date: data.date,
-      hash,
-      prevHash,
-      paymentId: data.paymentId ?? null,
-      invoiceId: data.invoiceId ?? null,
-      serviceChargeId: data.serviceChargeId ?? null,
-    },
-    include: { bcvRate: true, residence: true },
-  });
-
-  return entry;
 }
 
-// Verifica la integridad de toda la cadena (auditoría)
+// Verifica la integridad de toda la cadena (auditoria)
 export async function verifyLedgerIntegrity(): Promise<{
   ok: boolean;
   brokenAt?: string;

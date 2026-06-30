@@ -96,6 +96,22 @@ export async function POST(request: Request) {
       },
     });
 
+    // Crear asiento DEBIT en el ledger por el gasto
+    if (expense.status === "CONFIRMED" && amountUSD > 0) {
+      const { appendLedgerEntry } = await import("@/lib/ledger");
+      await appendLedgerEntry({
+        residenceId: body.residenceId || expense.condominiumId,
+        type: "DEBIT",
+        amountUSD,
+        amountVES,
+        bcvRateId: rate.id,
+        concept: `Gasto: ${expense.concept}`,
+        category: "EXPENSE",
+        reference: expense.id,
+        date: expense.date,
+      });
+    }
+
     return NextResponse.json({ ok: true, expense }, { status: 201 });
   } catch (e) {
     return NextResponse.json(

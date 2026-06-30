@@ -127,44 +127,69 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Vivienda no encontrada" }, { status: 404 });
     }
 
-    const payment = await db.payment.create({
-      data: {
+    // TRANSACCION: payment + ledger entry atomica
+    const { payment, ledgerEntry } = await db.$transaction(async (tx) => {
+      const payment = await tx.payment.create({
+        data: {
+          residenceId: body.residenceId,
+          amountUSD,
+          amountVES,
+          bcvRateId: rate.id,
+          method,
+          reference: body.reference?.trim() || null,
+          bankOrigin: body.bankOrigin || null,
+          payerPhone: body.payerPhone?.trim() || null,
+          payerName: body.payerName?.trim() || residence.ownerName || "—",
+          payerDoc: body.payerDoc?.trim() || null,
+          concept: body.concept?.trim() || "Pago de mantenimiento",
+          category: body.category || "MAINTENANCE",
+          status: "CONFIRMED",
+          date: body.date ? new Date(body.date) : new Date(),
+          notes: body.notes?.trim() || null,
+          recordedById: user.id,
+          fundId: body.fundId || null,
+          destinationAccountId: body.destinationAccountId || null,
+        },
+      });
+
+      // Ledger entry dentro de la misma transaccion
+      const last = await tx.accountEntry.findFirst({
+        orderBy: { createdAt: "desc" },
+        select: { hash: true },
+      });
+      const prevHash = last?.hash ?? null;
+      const { createHash } = await import("node:crypto");
+      const ledgerData = {
         residenceId: body.residenceId,
+        type: "CREDIT" as const,
         amountUSD,
         amountVES,
         bcvRateId: rate.id,
-        method,
-        reference: body.reference?.trim() || null,
-        bankOrigin: body.bankOrigin || null,
-        payerPhone: body.payerPhone?.trim() || null,
-        payerName: body.payerName?.trim() || residence.ownerName || "—",
-        payerDoc: body.payerDoc?.trim() || null,
-        concept: body.concept?.trim() || "Pago de mantenimiento",
-        category: body.category || "MAINTENANCE",
-        status: "CONFIRMED", // Admin siempre registra confirmado, no permitimos override del cliente
-        date: body.date ? new Date(body.date) : new Date(),
-        notes: body.notes?.trim() || null,
-        recordedById: user.id,
-        fundId: body.fundId || null,
-        destinationAccountId: body.destinationAccountId || null,
-      },
-    });
+        concept: `Pago recibido — ${method}`,
+        category: "PAYMENT",
+        reference: payment.reference || payment.id,
+        date: payment.date,
+        paymentId: payment.id,
+      };
+      const hash = createHash("sha256").update(JSON.stringify({
+        prevHash: prevHash ?? "",
+        ...ledgerData,
+        date: ledgerData.date.toISOString(),
+      })).digest("hex");
 
-    const entry = await appendLedgerEntry({
-      residenceId: body.residenceId,
-      type: "CREDIT",
-      amountUSD,
-      amountVES,
-      bcvRateId: rate.id,
-      concept: `Pago recibido — ${method}`,
-      category: "PAYMENT",
-      reference: payment.reference || payment.id,
-      date: payment.date,
-      paymentId: payment.id,
+      const ledgerEntry = await tx.accountEntry.create({
+        data: {
+          ...ledgerData,
+          hash,
+          prevHash,
+        },
+      });
+
+      return { payment, ledgerEntry };
     });
 
     return NextResponse.json(
-      { ok: true, payment, ledgerEntry: { id: entry.id, hash: entry.hash } },
+      { ok: true, payment, ledgerEntry: { id: ledgerEntry.id, hash: ledgerEntry.hash } },
       { status: 201 },
     );
   } catch (e) {

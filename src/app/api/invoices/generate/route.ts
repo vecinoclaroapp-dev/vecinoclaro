@@ -72,7 +72,7 @@ export async function POST(request: Request) {
       const amountUSD = round2(baseFeeUSD * (r.aliquot || 1));
       const amountVES = round2(usdToVes(amountUSD, rate.rate));
 
-      await db.invoice.create({
+      const invoice = await db.invoice.create({
         data: {
           residenceId: r.id,
           period,
@@ -83,6 +83,20 @@ export async function POST(request: Request) {
           status: "PENDING",
           paidAmountUSD: 0,
         },
+      });
+
+      // Crear asiento DEBIT en el ledger por la factura generada
+      await appendLedgerEntry({
+        residenceId: r.id,
+        type: "DEBIT",
+        amountUSD,
+        amountVES,
+        bcvRateId: rate.id,
+        concept: `Factura ${period}`,
+        category: "INVOICE",
+        reference: invoice.id,
+        date: new Date(),
+        invoiceId: invoice.id,
       });
       created++;
     }

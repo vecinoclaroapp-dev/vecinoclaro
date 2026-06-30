@@ -156,13 +156,14 @@ export function Sidebar() {
             <img
               src="/logo-vecinoclaro.png"
               alt="VecinoClaro"
-              className="h-9 w-9 object-contain shrink-0"
+              className="h-8 w-8 shrink-0"
+              style={{ objectFit: "contain" }}
             />
-            <div className="min-w-0 flex-1">
-              <p className="font-bold text-sm leading-tight">VecinoClaro</p>
-              <p className="text-[10px] text-muted-foreground leading-tight font-medium tracking-wide">
+            <div className="flex flex-col">
+              <span className="font-bold text-sm leading-tight text-sidebar-foreground">VecinoClaro</span>
+              <span className="text-[10px] text-muted-foreground leading-tight font-medium">
                 Cuentas Claras, Vecinos Claros
-              </p>
+              </span>
             </div>
           </div>
           <Button
