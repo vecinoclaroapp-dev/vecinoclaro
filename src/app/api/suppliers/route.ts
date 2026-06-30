@@ -67,3 +67,6 @@ export async function POST(request: Request) {
     );
   }
 }
+
+// PATCH /api/suppliers - no soportado, usar endpoint individual
+// Los suppliers se manejan solo con GET y POST por ahora

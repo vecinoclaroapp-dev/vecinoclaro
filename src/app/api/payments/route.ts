@@ -94,15 +94,21 @@ export async function POST(request: Request) {
 
     if (body.amountUSD != null && body.amountUSD !== "") {
       amountUSD = round2(Number(body.amountUSD));
+      if (isNaN(amountUSD) || amountUSD <= 0) {
+        return NextResponse.json({ error: "Monto USD inválido" }, { status: 400 });
+      }
       amountVES = usdToVes(amountUSD, rate.rate);
     } else if (body.amountVES != null && body.amountVES !== "") {
       amountVES = round2(Number(body.amountVES));
+      if (isNaN(amountVES) || amountVES <= 0) {
+        return NextResponse.json({ error: "Monto VES inválido" }, { status: 400 });
+      }
       amountUSD = round2(amountVES / rate.rate);
     } else {
       return NextResponse.json({ error: "Ingrese el monto en USD o VES" }, { status: 400 });
     }
 
-    if (amountUSD <= 0) {
+    if (amountUSD <= 0 || isNaN(amountUSD)) {
       return NextResponse.json({ error: "El monto debe ser mayor a 0" }, { status: 400 });
     }
 

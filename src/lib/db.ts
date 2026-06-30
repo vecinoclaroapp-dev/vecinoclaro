@@ -48,11 +48,10 @@ export function getDb(): PrismaClient {
     _client = new PrismaClient()
   } else {
     try {
-      // Intentar import sincrono
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      /* eslint-disable @typescript-eslint/no-require-imports */
       const { PrismaPg } = require('@prisma/adapter-pg') as typeof import('@prisma/adapter-pg')
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { Pool } = require('pg') as typeof import('pg')
+      /* eslint-enable @typescript-eslint/no-require-imports */
       const pool = new Pool({
         connectionString,
         max: 10,
@@ -77,7 +76,7 @@ export function getDb(): PrismaClient {
   return _client
 }
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+
 export const db = new Proxy({} as PrismaClient, {
   get(_target, prop) {
     const client = getDb()

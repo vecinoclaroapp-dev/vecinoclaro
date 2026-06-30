@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireModule } from "@/lib/module-check";
 import { db } from "@/lib/db";
 import { getUserContext, unauthorized, noCondominium } from "@/lib/api-context";
 
@@ -7,6 +8,7 @@ export async function GET() {
   const { user, condominium } = await getUserContext();
   if (!user) return unauthorized();
   if (!condominium) return noCondominium();
+  await requireModule(condominium.id, "works");
 
   const works = await db.work.findMany({
     where: { condominiumId: condominium.id },

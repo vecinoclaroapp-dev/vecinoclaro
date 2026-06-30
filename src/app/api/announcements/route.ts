@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireModule } from "@/lib/module-check";
 import { db } from "@/lib/db";
 import { getUserContext, unauthorized, noCondominium } from "@/lib/api-context";
 import { createNotificationForMembers } from "@/lib/notifications";
