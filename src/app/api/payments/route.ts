@@ -8,7 +8,7 @@ import { PAYMENT_METHODS, type PaymentMethod } from "@/lib/constants";
 
 // GET /api/payments
 export async function GET(request: Request) {
-  const { user, condominium } = await getUserContext();
+  const { user, condominium, membership } = await getUserContext();
   if (!user) return unauthorized();
   if (!condominium) return noCondominium();
 
@@ -63,6 +63,9 @@ export async function POST(request: Request) {
   const { user, condominium } = await getUserContext();
   if (!user) return unauthorized();
   if (!condominium) return noCondominium();
+  if (membership?.role !== "ADMIN") {
+    return NextResponse.json({ error: "Solo el administrador puede realizar esta acción" }, { status: 403 });
+  }
 
   try {
     const body = await request.json();
@@ -138,7 +141,7 @@ export async function POST(request: Request) {
         payerDoc: body.payerDoc?.trim() || null,
         concept: body.concept?.trim() || "Pago de mantenimiento",
         category: body.category || "MAINTENANCE",
-        status: body.status || "CONFIRMED",
+        status: "CONFIRMED", // Admin siempre registra confirmado, no permitimos override del cliente
         date: body.date ? new Date(body.date) : new Date(),
         notes: body.notes?.trim() || null,
         recordedById: user.id,

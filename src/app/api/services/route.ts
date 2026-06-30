@@ -8,7 +8,7 @@ import { SERVICE_TYPES, type ServiceChargeType } from "@/lib/constants";
 
 // GET /api/services
 export async function GET(request: Request) {
-  const { user, condominium } = await getUserContext();
+  const { user, condominium, membership } = await getUserContext();
   if (!user) return unauthorized();
   if (!condominium) return noCondominium();
 
@@ -55,6 +55,9 @@ export async function POST(request: Request) {
   const { user, condominium } = await getUserContext();
   if (!user) return unauthorized();
   if (!condominium) return noCondominium();
+  if (membership?.role !== "ADMIN") {
+    return NextResponse.json({ error: "Solo el administrador puede realizar esta acción" }, { status: 403 });
+  }
 
   try {
     const body = await request.json();

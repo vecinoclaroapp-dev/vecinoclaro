@@ -21,7 +21,11 @@ export async function GET() {
 
 // POST /api/bcv/sync — sincronizar con DolarApi.com (o guardar tasa manual)
 export async function POST(request: Request) {
-  const { user } = await getUserContext();
+  const { user, membership } = await getUserContext();
+  if (!user) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+  if (membership?.role !== "ADMIN") {
+    return NextResponse.json({ error: "Solo el administrador puede sincronizar la tasa BCV" }, { status: 403 });
+  }
   try {
     const body = await request.json().catch(() => ({}));
 

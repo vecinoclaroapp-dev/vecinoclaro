@@ -61,10 +61,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
           weight,
         },
       }),
-      db.pollOption.update({
-        where: { id: optionId },
-        data: { votes: { increment: 1 } },
-      }),
+      // Ya NO incrementamos PollOption.votes manualmente
+      // El conteo se hace con PollVote.length en GET /api/polls
     ]);
 
     return NextResponse.json({ ok: true, weight });

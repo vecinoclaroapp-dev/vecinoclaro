@@ -65,7 +65,7 @@ export const authOptions: NextAuthOptions = {
               image: user.image,
               provider: "google",
               password: null,
-              role: "ADMIN",
+              role: "USER",
               emailVerified: new Date(),
             },
           });

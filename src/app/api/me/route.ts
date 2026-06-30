@@ -49,8 +49,13 @@ export async function PATCH(request: Request) {
   }
   const body = await request.json();
 
-  // Sincronizar tasa BCV si el onboarding la solicita
+  // Sincronizar tasa BCV si el onboarding la solicita (solo ADMIN)
   if (body.syncBcv) {
+    const { getUserContext } = await import("@/lib/api-context");
+    const { membership } = await getUserContext();
+    if (membership?.role !== "ADMIN") {
+      return NextResponse.json({ error: "Solo el administrador puede sincronizar BCV" }, { status: 403 });
+    }
     const r = await fetchBcvRate();
     const saved = await saveBcvRate(r);
     return NextResponse.json({ ok: true, rate: saved.rate });

@@ -39,7 +39,7 @@ export async function POST(request: Request) {
         email: emailLower,
         password: hashedPassword,
         provider: "credentials",
-        role: "ADMIN",
+        role: "USER",
         onboardingDone: false,
         onboardingStep: 0,
       },
