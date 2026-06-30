@@ -60,7 +60,7 @@ export function UserPortal({ onBackToLanding }: { onBackToLanding: () => void })
       <header className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75 border-b border-border">
         <div className="flex items-center justify-between gap-3 px-4 h-16">
           <div className="flex items-center gap-2.5">
-            <img src="/logo-vecinoclaro.png" alt="VecinoClaro" className="h-9 w-9 rounded-xl object-cover" />
+            <img src="/logo-vecinoclaro.png" alt="VecinoClaro" className="h-9 w-9 object-cover" />
             <div>
               <p className="font-bold text-sm leading-tight">VecinoClaro</p>
               <p className="text-[10px] text-muted-foreground leading-tight">Cuentas Claras, Vecinos Claros</p>

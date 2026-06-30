@@ -79,9 +79,9 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
         <div className="relative z-10 text-center">
           <div className="flex items-center justify-center gap-3 mb-8">
             <img
-              src="/logo-vecinoclaro.jpg"
+              src="/logo-vecinoclaro.png"
               alt="VecinoClaro"
-              className="h-14 w-14 rounded-xl object-cover ring-1 ring-white/20"
+              className="h-14 w-14 object-cover"
             />
             <div className="text-left">
               <p className="font-bold text-xl leading-tight">VecinoClaro</p>
@@ -138,9 +138,9 @@ export function AuthScreen({ onAuthed, onBack, initialMode = "login" }: Props) {
           {/* Mobile brand con logo */}
           <div className="lg:hidden flex items-center gap-3 mb-6 justify-center">
             <img
-              src="/logo-vecinoclaro.jpg"
+              src="/logo-vecinoclaro.png"
               alt="VecinoClaro"
-              className="h-11 w-11 rounded-xl object-cover ring-1 ring-border"
+              className="h-11 w-11 object-cover"
             />
             <div>
               <p className="font-bold text-lg leading-tight">VecinoClaro</p>

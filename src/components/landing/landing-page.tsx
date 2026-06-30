@@ -51,7 +51,7 @@ export function LandingPage({ onGetStarted, onLogin }: Props) {
           >
             <nav className="mx-auto max-w-5xl flex items-center justify-between gap-4 px-6 py-3 rounded-2xl bg-emerald-950/90 backdrop-blur-xl shadow-lg shadow-emerald-950/20 border border-white/10">
               <div className="flex items-center gap-2.5 shrink-0">
-                <img src="/logo-vecinoclaro.jpg" alt="VecinoClaro" className="h-8 w-8 rounded-lg object-cover" />
+                <img src="/logo-vecinoclaro.png" alt="VecinoClaro" className="h-8 w-8 object-cover" />
                 <span className="font-bold text-sm text-white tracking-tight">VecinoClaro</span>
               </div>
               <div className="hidden md:flex items-center gap-5 text-sm text-emerald-100/80 mx-auto">
