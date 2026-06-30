@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { useMe } from "@/hooks/use-auth";
 import { useOnboardingStep } from "@/hooks/use-auth";
 import { useSyncBcv } from "@/hooks/use-api";
 import { RESIDENCE_TYPES } from "@/lib/constants";
@@ -52,6 +53,8 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
   const [step, setStep] = useState(0);
   const runStep = useOnboardingStep();
   const syncBcv = useSyncBcv();
+  const { data: me } = useMe();
+  const userRole = me?.user?.role || "ADMIN";
 
   // Paso 1
   const [condo, setCondo] = useState({
@@ -147,6 +150,11 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
 
   const currentStep = STEPS[step];
   const StepIcon = currentStep.icon;
+
+  // FLUJO DE USUARIO (no admin) — proceso distinto
+  if (userRole === "USER") {
+    return <UserOnboarding onComplete={onComplete} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-background to-amber-50/30 dark:from-emerald-950/20 dark:via-background dark:to-amber-950/10 flex items-center justify-center p-4">
@@ -385,6 +393,104 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
         <p className="text-center text-xs text-muted-foreground mt-6 flex items-center justify-center gap-1.5">
           <ShieldCheck className="h-3 w-3" /> Tus datos están protegidos. Contabilidad inmutable con hash SHA-256.
         </p>
+      </div>
+    </div>
+  );
+}
+
+// ============ FLUJO DE ONBOARDING PARA USUARIOS (no admin) ============
+function UserOnboarding({ onComplete }: { onComplete: () => void }) {
+  const [inviteCode, setInviteCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!inviteCode.trim()) {
+      setError("Ingresa el código que te dio tu administrador");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const r = await fetch("/api/residents/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: inviteCode.trim().toUpperCase() }),
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || "Código inválido");
+      setSuccess(true);
+      setTimeout(() => onComplete(), 2000);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error al vincular");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-amber-50/50 dark:from-emerald-950/20 dark:to-amber-950/10 p-6">
+        <div className="max-w-md text-center space-y-4">
+          <div className="h-20 w-20 rounded-full bg-emerald-100 dark:bg-emerald-950/40 flex items-center justify-center mx-auto">
+            <CheckCircle2 className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
+          </div>
+          <h1 className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">¡Vinculación exitosa!</h1>
+          <p className="text-sm text-muted-foreground">Ya puedes ver tus facturas y hacer pagos.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-background to-amber-50/30 dark:from-emerald-950/20 dark:via-background dark:to-amber-950/10 p-4">
+      <div className="w-full max-w-md space-y-6">
+        {/* Header */}
+        <div className="text-center">
+          <img src="/logo-vecinoclaro.png" alt="VecinoClaro" className="h-16 w-16 mx-auto object-contain mb-4" />
+          <h1 className="text-2xl font-bold">Bienvenido a VecinoClaro</h1>
+          <p className="text-sm text-muted-foreground mt-2">
+            Para empezar, ingresa el código de invitación que te dio el administrador de tu condominio.
+          </p>
+        </div>
+
+        {/* Formulario */}
+        <Card>
+          <CardContent className="pt-6 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="code">Código de invitación</Label>
+              <Input
+                id="code"
+                placeholder="Ej: VEC-7K3M"
+                value={inviteCode}
+                onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                className="text-center text-lg font-mono tracking-wider"
+                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+              />
+            </div>
+            {error && (
+              <div className="rounded-lg bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 p-3 text-sm text-rose-700 dark:text-rose-400">
+                {error}
+              </div>
+            )}
+            <Button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="w-full bg-emerald-600 hover:bg-emerald-700 gap-2"
+            >
+              {loading ? "Vinculando..." : "Vincular mi cuenta"}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Info */}
+        <div className="rounded-xl border border-sky-200 dark:border-sky-900/50 bg-sky-50/50 dark:bg-sky-950/20 p-4">
+          <p className="text-xs text-sky-700 dark:text-sky-400 font-semibold mb-1">¿No tienes un código?</p>
+          <p className="text-xs text-muted-foreground">
+            Pídele a tu administrador o junta de condominio el código de tu vivienda. El administrador lo puede generar desde la plataforma web en la sección "Código de invitación".
+          </p>
+        </div>
       </div>
     </div>
   );

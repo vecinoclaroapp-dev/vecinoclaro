@@ -107,40 +107,9 @@ export default function Home() {
     );
   }
 
-  // 2) Autenticado pero onboarding no completado
-  // Si es USER (residente), mostrar pantalla de bienvenida
-  if (!data.user.onboardingDone && data.user.role === "USER") {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-amber-50/50 dark:from-emerald-950/20 dark:to-amber-950/10 p-6">
-        <div className="max-w-md text-center space-y-6">
-          <img src="/logo-vecinoclaro.png" alt="VecinoClaro" className="h-20 w-20 mx-auto object-contain" />
-          <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">¡Bienvenido a VecinoClaro!</h1>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Tu cuenta está lista. Para empezar, necesitas que el administrador de tu condominio te invite con un código de vinculación.
-            </p>
-          </div>
-          <div className="rounded-xl border border-sky-200 dark:border-sky-900/50 bg-sky-50/50 dark:bg-sky-950/20 p-4 text-left">
-            <p className="text-xs text-sky-700 dark:text-sky-400 font-semibold mb-1">¿Qué hacer ahora?</p>
-            <p className="text-xs text-muted-foreground">
-              1. Pídele a tu administrador el código de tu vivienda<br/>
-              2. Cierra sesión y vuelve a entrar con ese código<br/>
-              3. ¡Listo! Podrás ver tus facturas y hacer pagos
-            </p>
-          </div>
-          <Button
-            onClick={() => setGuestView("landing")}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-8"
-          >
-            Volver al inicio
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // 2b) ADMIN sin onboarding → wizard
-  if (!data.user.onboardingDone) {
+  // 2) Autenticado
+  // ADMIN sin onboarding → wizard de configuracion de condominio
+  if (!data.user.onboardingDone && (data.user.role === "ADMIN" || data.user.role === "USER")) {
     return <OnboardingWizard onComplete={() => setForceRefresh((n) => n + 1)} />;
   }
 

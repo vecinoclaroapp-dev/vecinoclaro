@@ -45,8 +45,8 @@ export async function POST(request: Request) {
         password: hashedPassword,
         provider: "credentials",
         role: role === "ADMIN" ? "ADMIN" : "USER",
-        onboardingDone: role === "ADMIN" ? false : true,
-        onboardingStep: role === "ADMIN" ? 0 : 4,
+        onboardingDone: false,
+        onboardingStep: 0,
       },
     });
 
