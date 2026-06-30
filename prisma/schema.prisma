@@ -13,6 +13,9 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// NOTE: Vercel needs DATABASE_URL and DIRECT_URL set in Project Settings > Environment Variables
+// During build, if DATABASE_URL is not set, Prisma generate still works (it only needs the schema)
+
 // ---------------------------------------------------------------------
 // USUARIOS Y AUTH
 // ---------------------------------------------------------------------

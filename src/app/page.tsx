@@ -82,7 +82,30 @@ export default function Home() {
     );
   }
 
-  // 2) Autenticado pero onboarding no completado → wizard
+  // 2) Autenticado pero onboarding no completado
+  // Si es USER (registrado via web, sin rol admin asignado), mostrar pantalla de espera
+  if (!data.user.onboardingDone && data.user.role === "USER") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+        <div className="max-w-md text-center space-y-4">
+          <img src="/logo-vecinoclaro.png" alt="VecinoClaro" className="h-16 w-16 mx-auto object-contain" />
+          <h1 className="text-2xl font-bold">Cuenta creada</h1>
+          <p className="text-sm text-muted-foreground">
+            Tu cuenta está lista. Para empezar a usar VecinoClaro, un administrador de condominio debe invitarte.
+            Si eres administrador, cierra sesión y vuelve a registrarte — el sistema te guiará por la configuración.
+          </p>
+          <button
+            onClick={() => setForceRefresh((n) => n + 1)}
+            className="text-sm text-emerald-600 hover:underline"
+          >
+            Volver al inicio
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 2b) ADMIN sin onboarding → wizard
   if (!data.user.onboardingDone) {
     return <OnboardingWizard onComplete={() => setForceRefresh((n) => n + 1)} />;
   }
