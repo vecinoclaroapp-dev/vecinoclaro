@@ -36,6 +36,7 @@ import { TeamView } from "@/components/admin/team-view";
 import { ModuleConfigView } from "@/components/admin/module-config-view";
 import { MembershipView } from "@/components/membership/membership-view";
 import { SettingsView } from "@/components/dashboard/settings-view";
+import { UserPortal } from "@/components/user/user-portal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppStore } from "@/store/app-store";
 
@@ -82,9 +83,14 @@ export default function Home() {
     );
   }
 
-  // 2) Autenticado pero onboarding no completado → wizard
-  if (!data.user.onboardingDone) {
+  // 2) Autenticado pero onboarding no completado → wizard (solo ADMIN)
+  if (!data.user.onboardingDone && data.user.role === "ADMIN") {
     return <OnboardingWizard onComplete={() => setForceRefresh((n) => n + 1)} />;
+  }
+
+  // 2.5) Usuario RESIDENT sin condominio → portal de usuario (app móvil)
+  if (data.user.role === "RESIDENT" && !data.condominium) {
+    return <UserPortal onBackToLanding={() => setForceRefresh((n) => n + 1)} />;
   }
 
   // 3) Autenticado + onboarding completo → app
