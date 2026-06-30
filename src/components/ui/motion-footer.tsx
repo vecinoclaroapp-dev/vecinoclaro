@@ -141,7 +141,7 @@ export function CinematicFooter({ onGetStarted, onLogin }: FooterProps) {
           </div>
 
           <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 mt-20 w-full max-w-5xl mx-auto">
-            <h2 ref={headingRef} className="text-5xl md:text-8xl font-black tracking-tighter mb-12 text-center text-emerald-900 dark:text-emerald-100">Empieza hoy</h2>
+            <h2 ref={headingRef} className="text-5xl md:text-8xl font-black tracking-tighter mb-12 text-center text-emerald-900 dark:text-emerald-100">Descarga la App</h2>
             <div ref={linksRef} className="flex flex-col items-center gap-6 w-full">
               <div className="flex flex-wrap justify-center gap-4 w-full">
                 {onGetStarted && (
@@ -154,11 +154,16 @@ export function CinematicFooter({ onGetStarted, onLogin }: FooterProps) {
                     <span className="text-xl">→</span> Iniciar sesion
                   </button>
                 )}
+                <a href="/vecinoclaro.apk" download="vecinoclaro.apk" className="px-10 py-5 rounded-full font-bold text-sm md:text-base flex items-center gap-3 cursor-pointer bg-gradient-to-r from-amber-400 to-emerald-500 hover:from-amber-300 hover:to-emerald-400 text-emerald-950 shadow-lg shadow-emerald-500/20 transition-all">
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Descargar App
+                </a>
               </div>
               <div className="flex flex-wrap justify-center gap-3 md:gap-6 w-full mt-2">
                 <a href="#features" className="footer-glass-pill px-6 py-3 rounded-full text-muted-foreground font-medium text-xs md:text-sm hover:text-foreground cursor-pointer">Funciones</a>
                 <a href="#how" className="footer-glass-pill px-6 py-3 rounded-full text-muted-foreground font-medium text-xs md:text-sm hover:text-foreground cursor-pointer">Como funciona</a>
                 <a href="#stats" className="footer-glass-pill px-6 py-3 rounded-full text-muted-foreground font-medium text-xs md:text-sm hover:text-foreground cursor-pointer">Confianza</a>
+                <a href="#membership" className="footer-glass-pill px-6 py-3 rounded-full text-amber-600 dark:text-amber-400 font-semibold text-xs md:text-sm hover:text-amber-500 cursor-pointer">Membresia</a>
               </div>
             </div>
           </div>
