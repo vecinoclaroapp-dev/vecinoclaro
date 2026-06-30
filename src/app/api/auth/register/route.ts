@@ -44,7 +44,7 @@ export async function POST(request: Request) {
         email: emailLower,
         password: hashedPassword,
         provider: "credentials",
-        role: role === "ADMIN" ? "ADMIN" : "USER",
+        role: "ADMIN",
         onboardingDone: false,
         onboardingStep: 0,
       },

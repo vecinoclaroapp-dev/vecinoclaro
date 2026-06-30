@@ -42,7 +42,7 @@ import { SettingsView } from "@/components/dashboard/settings-view";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppStore } from "@/store/app-store";
 
-type GuestView = "landing" | "auth" | "register" | "role-selector" | "resident-join";
+type GuestView = "landing" | "auth" | "role-selector" | "register-admin" | "resident-join";
 
 export default function Home() {
   const { data, isLoading, refetch } = useMe();
@@ -71,35 +71,35 @@ export default function Home() {
     if (guestView === "landing") {
       return (
         <LandingPage
-          onGetStarted={() => setGuestView("register")}
+          onGetStarted={() => setGuestView("role-selector")}
           onLogin={() => setGuestView("auth")}
         />
       );
     }
 
-    // Registro: formulario base (nombre, email, password)
-    if (guestView === "register") {
+    // Selector de rol PRIMERO: "¿Tú quién eres?"
+    if (guestView === "role-selector") {
       return (
-        <AuthScreen
-          initialMode="register"
-          onAuthed={() => setGuestView("role-selector")}
+        <RoleSelectorScreen
+          onSelectAdmin={() => setGuestView("register-admin")}
+          onSelectUser={() => setGuestView("resident-join")}
           onBack={() => setGuestView("landing")}
         />
       );
     }
 
-    // Selector de rol: "¿Tú quién eres? Soy Usuario / Soy Condominio"
-    if (guestView === "role-selector") {
+    // Condominio: AuthScreen registro → OnboardingWizard (ubicación, RIF, viviendas, BCV)
+    if (guestView === "register-admin") {
       return (
-        <RoleSelectorScreen
-          onSelectAdmin={() => setForceRefresh((n) => n + 1)}
-          onSelectUser={() => setGuestView("resident-join")}
-          onBack={() => setGuestView("register")}
+        <AuthScreen
+          initialMode="register"
+          onAuthed={() => setForceRefresh((n) => n + 1)}
+          onBack={() => setGuestView("role-selector")}
         />
       );
     }
 
-    // Usuario: proceso de residente (código + puerta + cuenta)
+    // Usuario: ResidentJoinScreen (código + puerta + cuenta → vinculación)
     if (guestView === "resident-join") {
       return (
         <ResidentJoinScreen
@@ -119,7 +119,7 @@ export default function Home() {
     );
   }
 
-  // 2) Autenticado, onboarding no completado → wizard (solo ADMIN)
+  // 2) ADMIN sin onboarding → wizard (ubicación, RIF, viviendas, BCV)
   if (!data.user.onboardingDone && data.user.role === "ADMIN") {
     return <OnboardingWizard onComplete={() => setForceRefresh((n) => n + 1)} />;
   }
